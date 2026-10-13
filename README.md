@@ -30,7 +30,7 @@ Open `index.html` in a web browser (or run via Live Server). No build step, no s
 - [ ] Stage 2: data logic in JavaScript
 - [ ] Stage 3: React project initialization
 
-- [ ] ## Stage 1 Verification Table
+ ## Stage 1 Verification Table
 
 | ID | Requirement | Where | How to check |
 | :--- | :--- | :--- | :--- |
