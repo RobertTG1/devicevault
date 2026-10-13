@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DeviceVault - Mockup</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="app-header">
+    <h1>DeviceVault</h1>
+    <p>Monitorizează și gestionează dispozitivele Smart Home din locuință.</p>
+    <p class="app-count">3 dispozitive, dintre care 2 active</p>
+</header>
+
+<main class="container">
+    <!-- Panoul 1: Formular adaugare dispozitiv -->
+    <section class="panel">
+        <h2>Adaugă dispozitiv</h2>
+        <form class="item-form">
+            <label>
+                Nume dispozitiv
+                <input type="text" name="titlu" placeholder="Ex: Aspirator Robot" required />
+            </label>
+            <label>
+                Protocol rețea
+                <select name="eticheta">
+                    <option value="wifi">Wi-Fi</option>
+                    <option value="zigbee">Zigbee</option>
+                    <option value="bluetooth">Bluetooth</option>
+                </select>
+            </label>
+            <button type="submit">Adaugă</button>
+        </form>
+    </section>
+
+    <!-- Panoul 2: Lista dispozitivelor -->
+    <section class="panel">
+        <h2>Dispozitive conectate</h2>
+        <!-- Când lista e goală: <p class="empty">Nu există niciun element.</p> -->
+        <ul class="item-list">
+            <li class="item-card">
+                <div>
+                    <h3>Roborock Robot Vacuum</h3>
+                    <span class="badge badge-wifi">Wi-Fi</span>
+                </div>
+                <span class="status">Online</span>
+            </li>
+
+            <!-- S1-R5: Card marcat ca inactiv/offline cu clasa done -->
+            <li class="item-card done">
+                <div>
+                    <h3>Google TV Streamer</h3>
+                    <span class="badge badge-bluetooth">Bluetooth</span>
+                </div>
+                <span class="status">Offline</span>
+            </li>
+
+            <li class="item-card">
+                <div>
+                    <h3>Aqara Temperature Sensor</h3>
+                    <span class="badge badge-zigbee">Zigbee</span>
+                </div>
+                <span class="status">Online</span>
+            </li>
+        </ul>
+    </section>
+</main>
+
+<footer class="app-footer">Proiect Tehnologii Web - 2026-2027</footer>
+</body>
+</html>
