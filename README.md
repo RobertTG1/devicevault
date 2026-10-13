@@ -18,7 +18,12 @@ Sample data used across all stages:
 3. Aqara Temperature Sensor, active, Zigbee
 
 ## How to run
-Open `index.html` in a web browser (or run via Live Server). No build step, no server required for Stage 1.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Then open the address printed in the terminal (http://localhost:5173).
 
 ## AI usage
 | Tool | Used for |
@@ -28,10 +33,13 @@ Open `index.html` in a web browser (or run via Live Server). No build step, no s
 ## Stage 2: data logic
 Plain JavaScript, no DOM. `dispozitive.js` holds the array of smart home devices and the pure functions that read and transform it. Results are logged directly in the browser console (F12).
 
+## Stage 3: Vite and React project
+The app now lives in `frontend/`, built with Vite. The data from Stage 2 moved into the main component; the list is rendered raw as JSON.
+
 ## Status
 - [x] Stage 1: static mockup
 - [x] Stage 2: data logic in JavaScript
-- [ ] Stage 3: React project initialization
+- [x] Stage 3: React project initialization
 
  ## Stage 1 Verification Table
 
@@ -57,3 +65,16 @@ Plain JavaScript, no DOM. `dispozitive.js` holds the array of smart home devices
 | S2-R5 | original array unchanged after add | [dispozitive.js](dispozitive.js) | Check "Originalul a rămas cu: 3" console line |
 | S2-R6 | README Stage 2 section + AI log | [README.md](README.md), [ai-log/etapa-02.md](ai-log/etapa-02.md) | Read documentation |
 | S2-R7 | Commit "Stage 2" pushed | [Commit history](https://github.com/RobertTG1/devicevault/commits/main) | Check commit history |
+
+
+## Stage 3 Verification Table
+
+| ID | Requirement | Where | How to check |
+| :--- | :--- | :--- | :--- |
+| S3-R1 | npm run dev starts without errors | [frontend/package.json](frontend/package.json) | Run `npm install`, then `npm run dev` |
+| S3-R2 | app name and counter computed from data | [frontend/src/App.jsx](frontend/src/App.jsx) | Edit data array, check hot reload |
+| S3-R3 | data from README, not from example | [frontend/src/App.jsx](frontend/src/App.jsx) | Compare with README data model |
+| S3-R4 | stage 1 styles reused | [frontend/src/App.css](frontend/src/App.css) | Inspect rendered page styles |
+| S3-R5 | node_modules ignored, build passes | [frontend/.gitignore](frontend/.gitignore) | Run `npm run build` |
+| S3-R6 | README Stage 3 section + AI log | [README.md](README.md), [ai-log/etapa-03.md](ai-log/etapa-03.md) | Read documentation |
+| S3-R7 | Commit "Stage 3" pushed | [Commit history](https://github.com/RobertTG1/devicevault/commits/main) | Check commit history |
