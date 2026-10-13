@@ -45,3 +45,15 @@ Plain JavaScript, no DOM. `dispozitive.js` holds the array of smart home devices
 | S1-R6 | 2 columns on desktop, 1 under 700px | [style.css](style.css) | Resize browser window under 700px |
 | S1-R7 | Visible focus, readable dark theme | [style.css](style.css) | Press Tab; test with DevTools dark mode emulation |
 | S1-R8 | Commit "Stage 1" pushed | [Commit history](https://github.com/RobertTG1/devicevault/commits/main) | Verify commit messages |
+
+## Stage 2 Verification Table
+
+| ID | Requirement | Where | How to check |
+| :--- | :--- | :--- | :--- |
+| S2-R1 | JS file linked, logs on page load | [index.html](index.html) | Open page, press F12 (Console) |
+| S2-R2 | 3+ items with id, name, state, tag | [dispozitive.js](dispozitive.js) | Read `dispozitive` array declaration |
+| S2-R3 | list, count, search, add, toggle, delete | [dispozitive.js](dispozitive.js) | Inspect browser console output |
+| S2-R4 | add rejects empty name and invalid tag | [dispozitive.js](dispozitive.js) | Check last 2 warning lines in console |
+| S2-R5 | original array unchanged after add | [dispozitive.js](dispozitive.js) | Check "Originalul a rămas cu: 3" console line |
+| S2-R6 | README Stage 2 section + AI log | [README.md](README.md), [ai-log/etapa-02.md](ai-log/etapa-02.md) | Read documentation |
+| S2-R7 | Commit "Stage 2" pushed | [Commit history](https://github.com/RobertTG1/devicevault/commits/main) | Check commit history |
