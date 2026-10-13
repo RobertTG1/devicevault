@@ -3,100 +3,578 @@
 }
 
 :root {
-  --bg: #f4f5f7;
-  --card: #ffffff;
-  --text: #1f2933;
-  --muted: #6b7280;
-  --accent: #5b3fd9;
-  --accent-dark: #4338ca;
-  --accent-soft: #ede9fe;
-  --border: #e5e7eb;
+  --display-bg: #e2e8f0;
+  --frame-bg: #f8fafc;
+  --text-main: #0f172a;
+  --text-sub: #64748b;
+  --border: #e2e8f0;
 
-  /* Culori badges */
-  --badge-wifi: #0284c7;
-  --badge-zigbee: #16a34a;
-  --badge-bluetooth: #6366f1;
+  /* Culori accente dispozitive */
+  --accent-vacuum: #10b981;
+  --accent-media: #0284c7;
+  --accent-climate: #059669;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.5;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #cbd5e1;
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
-.app-header {
-  background-color: var(--accent);
-  color: #ffffff;
-  text-align: center;
-  padding: 32px 16px;
+.hub-viewport {
+  width: 100%;
+  max-width: 1180px;
 }
 
-.app-header h1 {
-  margin: 0 0 8px 0;
-  font-size: 2rem;
+/* Rama fizică a tabletei Google Nest Hub */
+.hub-device-frame {
+  background: #f1f5f9;
+  border-radius: 36px;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25), 0 4px 14px rgba(0, 0, 0, 0.08);
+  border: 12px solid #ffffff;
+  padding: 24px;
+  position: relative;
+  min-height: 660px;
 }
 
-.app-header p {
-  margin: 4px 0;
+.hub-notch {
+  width: 8px;
+  height: 8px;
+  background: #cbd5e1;
+  border-radius: 50%;
+  margin: -10px auto 16px auto;
 }
 
-.app-count {
+.hub-layout {
+  display: flex;
+  gap: 28px;
+}
+
+/* Sidebar stânga */
+.hub-sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-clock {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -1px;
+  margin-bottom: 24px;
+}
+
+.hub-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-item {
+  background: transparent;
+  border: none;
+  text-align: left;
   font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-sub);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-main);
+}
+
+.nav-item.active {
+  background: #ffffff;
+  color: var(--text-main);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.nav-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 14px 4px;
+}
+
+.nav-heading {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.8px;
+  padding: 4px 14px;
+}
+
+/* Zona principală */
+.hub-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.hub-header h2 {
+  margin: 0;
+  font-size: 1.45rem;
+}
+
+.hub-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-sub);
+}
+
+.hub-status-pill {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 0 6px #16a34a;
+}
+
+/* === SPAȚIUL DE LUCRU (CENTRUL + LATERALUL) === */
+.hub-workspace {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 22px;
+  margin-bottom: 22px;
+}
+
+/* CARDUL PRINCIPAL DIN CENTRU */
+.hub-center-stage {
+  display: flex;
+  flex-direction: column;
+}
+
+.center-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.center-card.is-off {
+  opacity: 0.75;
+  filter: grayscale(0.2);
+}
+
+/* Culori subtile pe baza dispozitivului */
+.center-card.card-media {
+  background: linear-gradient(170deg, #ffffff 60%, #f0f9ff 100%);
+  border-top: 4px solid var(--accent-media);
+}
+
+.center-card.card-vacuum {
+  background: linear-gradient(170deg, #ffffff 60%, #f0fdf4 100%);
+  border-top: 4px solid var(--accent-vacuum);
+}
+
+.center-card.card-climate {
+  background: linear-gradient(170deg, #ffffff 60%, #ecfdf5 100%);
+  border-top: 4px solid var(--accent-climate);
+}
+
+.center-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.center-title-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.center-icon {
+  font-size: 2rem;
+  width: 52px;
+  height: 52px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-title-box h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.center-location {
+  font-size: 0.85rem;
+  color: var(--text-sub);
+}
+
+/* Buton Power */
+.power-switch-btn {
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.power-switch-btn.on {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.power-switch-btn.off {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Corp comenzi */
+.center-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.group-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.6px;
+}
+
+.button-cluster {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn.primary {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.action-btn.primary:hover {
+  background: #0369a1;
+}
+
+.action-btn.primary.active {
+  background: #e11d48;
+}
+
+.action-btn.secondary {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.action-btn.secondary:hover {
+  background: #cbd5e1;
+}
+
+.mode-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-btn {
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.mini-metric {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.m-label {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+}
+
+.m-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Media Specific */
+.media-screen-banner {
+  background: #0284c7;
+  color: #ffffff;
+  padding: 16px 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.2);
+}
+
+.media-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
   opacity: 0.9;
 }
 
-/* S3-R4: Container cu o singura coloana in Etapa 3 */
-.container {
-  max-width: 1000px;
-  margin: 24px auto;
-  padding: 0 16px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  align-items: start;
+.media-title {
+  margin: 4px 0;
+  font-size: 1.15rem;
 }
 
-.panel {
-  background: var(--card);
-  border: 1px solid var(--border);
+.media-res {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+.media-playback-bar {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.volume-slider-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  padding: 6px 14px;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.panel h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  font-size: 1.25rem;
-}
-
-pre {
-  background: var(--bg);
-  padding: 16px;
-  border-radius: 8px;
   border: 1px solid var(--border);
-  overflow-x: auto;
-  font-family: monospace;
+}
+
+.range-input {
+  flex: 1;
+  accent-color: #0284c7;
+}
+
+/* Climate Specific */
+.climate-display-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.climate-big-card {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.c-label {
+  font-size: 0.8rem;
+  color: #15803d;
+}
+
+.c-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #14532d;
+  margin: 4px 0;
+}
+
+.c-status {
+  font-size: 0.75rem;
+  color: #166534;
+}
+
+/* === CARDURILE DIN LATERAL (SWAP LIST) === */
+.hub-side-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.side-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.side-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.side-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.side-card:hover {
+  transform: translateX(-4px);
+  border-color: #0284c7;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.12);
+}
+
+.side-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.side-card-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.side-card-icon {
+  font-size: 1.4rem;
+  width: 40px;
+  height: 40px;
+  background: #f8fafc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-card-info h5 {
+  margin: 0;
   font-size: 0.95rem;
-  color: var(--text);
+  font-weight: 700;
 }
 
-.app-footer {
-  text-align: center;
-  padding: 24px;
-  color: var(--muted);
-  font-size: 0.9rem;
+.side-card-room {
+  font-size: 0.8rem;
+  color: var(--text-sub);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14121d;
-    --card: #1e1b2e;
-    --text: #e5e7eb;
-    --muted: #9ca3af;
-    --border: #352f4d;
-    --accent-soft: #2a2342;
-  }
+.side-chip {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.chip-wifi { background: #e0f2fe; color: #0369a1; }
+.chip-zigbee { background: #dcfce7; color: #15803d; }
+.chip-bluetooth { background: #f1f5f9; color: #475569; }
+
+.side-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
+}
+
+.side-stat {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.swap-hint {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0284c7;
+}
+
+/* Bottom Bar */
+.hub-bottom-bar {
+  display: flex;
+  gap: 12px;
+}
+
+.shortcut-pill {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
