@@ -25,9 +25,12 @@ Open `index.html` in a web browser (or run via Live Server). No build step, no s
 | :--- | :--- |
 | Gemini | Semantic HTML scaffolding, CSS Grid and Flexbox layouts, accessibility focus states, and dark theme variables. Details per stage: see the `ai-log/` folder. |
 
+## Stage 2: data logic
+Plain JavaScript, no DOM. `dispozitive.js` holds the array of smart home devices and the pure functions that read and transform it. Results are logged directly in the browser console (F12).
+
 ## Status
 - [x] Stage 1: static mockup
-- [ ] Stage 2: data logic in JavaScript
+- [x] Stage 2: data logic in JavaScript
 - [ ] Stage 3: React project initialization
 
  ## Stage 1 Verification Table
