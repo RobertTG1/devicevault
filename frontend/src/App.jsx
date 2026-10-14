@@ -1,24 +1,24 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-// Coordonate precise în interiorul Living-ului pentru aspirator
+// Traseu precis în interiorul Living-ului
 const VACUUM_WAYPOINTS = [
-    { x: 49, y: 160 }, // Dock
-    { x: 49, y: 95 },
-    { x: 115, y: 95 },
-    { x: 115, y: 55 },
-    { x: 165, y: 55 },
-    { x: 165, y: 145 },
-    { x: 210, y: 145 },
-    { x: 210, y: 60 },
-    { x: 255, y: 60 },
-    { x: 255, y: 145 },
-    { x: 300, y: 145 },
-    { x: 300, y: 60 },
-    { x: 345, y: 60 },
-    { x: 345, y: 140 },
-    { x: 130, y: 150 },
-    { x: 49, y: 160 }, // Înapoi la Dock
+    { x: 49, y: 160 }, // 0: Dock
+    { x: 49, y: 95 },  // 1: Ieșire din dock spre stânga sus
+    { x: 115, y: 95 }, // 2
+    { x: 115, y: 55 }, // 3: Sub canapea
+    { x: 165, y: 55 }, // 4
+    { x: 165, y: 145 },// 5: Coborâre pe covor
+    { x: 210, y: 145 },// 6
+    { x: 210, y: 60 }, // 7: Urcare covor
+    { x: 255, y: 60 }, // 8
+    { x: 255, y: 145 },// 9: Coborâre covor
+    { x: 300, y: 145 },// 10
+    { x: 300, y: 60 }, // 11: Urcare lângă TV
+    { x: 345, y: 60 }, // 12
+    { x: 345, y: 140 },// 13: Ocolire ușă
+    { x: 130, y: 150 },// 14: Diagonală de revenire
+    { x: 49, y: 160 }, // 15: Andocare la încărcător
 ];
 
 const MEDIA_SOURCES = {
@@ -75,9 +75,10 @@ const initialDevices = [
         seIntoarceLaDock: false,
         laDock: true,
         pasTraseu: 0,
+        unghi: -90, // Orientat în sus spre cameră la pornire
         mopActiv: true,
-        debitApa: "Mediu", // Redus, Mediu, Ridicat
-        nivelApaMop: 88, // %
+        debitApa: "Mediu",
+        nivelApaMop: 88,
         suprafataCuratata: 42,
         durataSecunde: 2280,
         consumWatts: 55,
@@ -186,20 +187,20 @@ const initialRoutines = [
 
 export default function App() {
     const [devices, setDevices] = useState(() => {
-        const saved = localStorage.getItem("dv_devices_v3");
+        const saved = localStorage.getItem("dv_devices_v4");
         return saved ? JSON.parse(saved) : initialDevices;
     });
 
     const [routines, setRoutines] = useState(() => {
-        const saved = localStorage.getItem("dv_routines_v3");
+        const saved = localStorage.getItem("dv_routines_v4");
         return saved ? JSON.parse(saved) : initialRoutines;
     });
 
     const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem("dv_dark_v3") === "true";
+        return localStorage.getItem("dv_dark_v4") === "true";
     });
 
-    const [activeTab, setActiveTab] = useState("room");
+    const [activeTab, setActiveTab] = useState("room"); // "home", "room", "rutine"
     const [selectedId, setSelectedId] = useState(1);
     const [cameraSelectata, setCameraSelectata] = useState("Living");
     const [oraCurenta, setOraCurenta] = useState("");
@@ -209,21 +210,21 @@ export default function App() {
     const [showLogModal, setShowLogModal] = useState(false);
 
     const [activityLog, setActivityLog] = useState([
-        { timp: "12:00:10", text: "Sistemul DeviceVault Hub a pornit (Toate nodurile online)." },
-        { timp: "12:05:22", text: "Aqara Sensor: Telemetrie sincronizată pe Zigbee Canal 25." },
-        { timp: "12:12:45", text: "Roborock: Stație de andocare verificată, baterie 84%." },
+        { timp: "12:00:10", text: "DeviceVault Hub inițializat (4 noduri active)." },
+        { timp: "12:05:22", text: "Aqara Sensor: Telemetrie Zigbee sincronizată." },
+        { timp: "12:12:45", text: "Roborock: Conexiune Wi-Fi stabilă, pregătit de lucru." },
     ]);
 
     useEffect(() => {
-        localStorage.setItem("dv_devices_v3", JSON.stringify(devices));
+        localStorage.setItem("dv_devices_v4", JSON.stringify(devices));
     }, [devices]);
 
     useEffect(() => {
-        localStorage.setItem("dv_routines_v3", JSON.stringify(routines));
+        localStorage.setItem("dv_routines_v4", JSON.stringify(routines));
     }, [routines]);
 
     useEffect(() => {
-        localStorage.setItem("dv_dark_v3", String(darkMode));
+        localStorage.setItem("dv_dark_v4", String(darkMode));
     }, [darkMode]);
 
     const adaugaJurnal = (mesaj) => {
@@ -247,7 +248,7 @@ export default function App() {
         return () => clearInterval(timer);
     }, []);
 
-    // 1. Simulator Roborock: Deplasare pe hartă în timpul curățeniei
+    // 1. Simulator Roborock: Deplasare cursivă și rotire dinamică LiDAR
     useEffect(() => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac || !vac.inCuratare || !vac.online) return;
@@ -257,29 +258,42 @@ export default function App() {
                 prev.map((d) => {
                     if (d.id === 1 && d.inCuratare && d.online) {
                         const nextPas = (d.pasTraseu + 1) % VACUUM_WAYPOINTS.length;
+                        const prevPoint = VACUUM_WAYPOINTS[d.pasTraseu];
+                        const nextPoint = VACUUM_WAYPOINTS[nextPas];
+
+                        // Orientare unghi spre următorul punct
+                        const dx = nextPoint.x - prevPoint.x;
+                        const dy = nextPoint.y - prevPoint.y;
+                        const unghiTinta = Math.atan2(dy, dx) * (180 / Math.PI);
+
+                        const unghiCurent = d.unghi ?? -90;
+                        const dif = ((unghiTinta - (unghiCurent % 360) + 540) % 360) - 180;
+                        const unghiNou = unghiCurent + dif;
+
                         const apaScazuta = d.mopActiv && d.durataSecunde % 20 === 0 ? Math.max(5, d.nivelApaMop - 1) : d.nivelApaMop;
                         const batScazuta = d.durataSecunde % 18 === 0 ? Math.max(5, d.baterie - 1) : d.baterie;
 
                         return {
                             ...d,
                             pasTraseu: nextPas,
+                            unghi: unghiNou,
                             durataSecunde: d.durataSecunde + 1,
                             suprafataCuratata: Number((d.suprafataCuratata + 0.08).toFixed(1)),
                             baterie: batScazuta,
                             nivelApaMop: apaScazuta,
                             laDock: false,
-                            stare: d.mopActiv ? "Aspirare + Mop în curs..." : "Aspirare în curs...",
+                            stare: d.mopActiv ? "Aspirare + Mop în curs..." : "Aspirare în desfășurare...",
                         };
                     }
                     return d;
                 })
             );
-        }, 1300);
+        }, 1200);
 
         return () => clearInterval(interval);
     }, [devices]);
 
-    // 2. Simulator Roborock: Revenire vizibilă de unde a rămas către Dock
+    // 2. Simulator Roborock: Revenire cursivă pe traseu la Dock
     useEffect(() => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac || !vac.seIntoarceLaDock || !vac.online) return;
@@ -288,33 +302,43 @@ export default function App() {
             setDevices((prev) =>
                 prev.map((d) => {
                     if (d.id === 1 && d.seIntoarceLaDock) {
-                        // Dacă a ajuns la Dock (punctul 0)
                         if (d.pasTraseu === 0) {
                             adaugaJurnal("Roborock: A sosit la Dock și a început încărcarea.");
                             return {
                                 ...d,
                                 seIntoarceLaDock: false,
                                 laDock: true,
+                                unghi: -90,
                                 stare: "Andocat la încărcare",
                             };
                         }
-                        // Avansează un pas mai aproape de indexul 0
                         const pasNou = d.pasTraseu > 0 ? (d.pasTraseu + 1) % VACUUM_WAYPOINTS.length : 0;
+                        const prevPoint = VACUUM_WAYPOINTS[d.pasTraseu];
+                        const nextPoint = VACUUM_WAYPOINTS[pasNou];
+
+                        const dx = nextPoint.x - prevPoint.x;
+                        const dy = nextPoint.y - prevPoint.y;
+                        const unghiTinta = Math.atan2(dy, dx) * (180 / Math.PI);
+                        const unghiCurent = d.unghi ?? -90;
+                        const dif = ((unghiTinta - (unghiCurent % 360) + 540) % 360) - 180;
+                        const unghiNou = unghiCurent + dif;
+
                         return {
                             ...d,
                             pasTraseu: pasNou,
+                            unghi: unghiNou,
                             stare: "Revenire pe traseu la stația de încărcare...",
                         };
                     }
                     return d;
                 })
             );
-        }, 1000);
+        }, 1200);
 
         return () => clearInterval(interval);
     }, [devices]);
 
-    // 3. Simulator Roborock: Încărcare progresivă a bateriei când e la Dock
+    // 3. Simulator Roborock: Încărcare dinamică la Dock până la 100%
     useEffect(() => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac || !vac.laDock || vac.baterie >= 100 || !vac.online || vac.inCuratare) return;
@@ -336,7 +360,7 @@ export default function App() {
                     return d;
                 })
             );
-        }, 2200); // Crește cu 1% la fiecare 2.2 secunde
+        }, 2000);
 
         return () => clearInterval(interval);
     }, [devices]);
@@ -422,7 +446,6 @@ export default function App() {
         if (logText) adaugaJurnal(logText);
     };
 
-    // Trimiterea robotului la Dock de unde a rămas pe traseu
     const handleSendToDock = () => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac) return;
@@ -439,9 +462,9 @@ export default function App() {
                 seIntoarceLaDock: true,
                 stare: "Se întoarce la stația de încărcare (Dock)...",
             },
-            "Roborock: Comandă revenire la dock primită. Întoarcere în curs..."
+            "Roborock: Revenire inițiată de unde a rămas pe traseu."
         );
-        afiseazaNotificare("Roborock revine pe traseu către stația de încărcare...");
+        afiseazaNotificare("Roborock se întoarce spre dock pe traseu...");
     };
 
     const handleChangeMediaSource = (id, srcKey) => {
@@ -497,15 +520,47 @@ export default function App() {
                 })
             );
             afiseazaNotificare("Rutina „Noapte Bună”: Roborock revine la Dock în mod Silent.");
+        } else if (id === "movie") {
+            const plexMeta = MEDIA_SOURCES["Plex 4K"];
+            setDevices((prev) =>
+                prev.map((d) => {
+                    if (d.id === 2)
+                        return {
+                            ...d,
+                            online: true,
+                            redare: true,
+                            volum: 55,
+                            sursaKey: "Plex 4K",
+                            sursa: plexMeta.sursa,
+                            badge: plexMeta.badge,
+                            titluMedia: plexMeta.titluMedia,
+                            codec: plexMeta.codec,
+                            themeClass: plexMeta.themeClass,
+                        };
+                    if (d.id === 1) return { ...d, inCuratare: false, seIntoarceLaDock: true };
+                    return d;
+                })
+            );
+            afiseazaNotificare("Rutina „Seară de Film”: Plex 4K pornit, aspiratorul andochează.");
+        } else if (id === "away") {
+            setDevices((prev) =>
+                prev.map((d) => {
+                    if (d.id === 1)
+                        return { ...d, online: true, inCuratare: true, laDock: false, seIntoarceLaDock: false, modCuratare: "Turbo" };
+                    if (d.id === 2 || d.id === 4) return { ...d, online: false };
+                    return d;
+                })
+            );
+            afiseazaNotificare("Rutina „Curățenie la Plecare”: Roborock aspiră în mod Turbo.");
         }
     };
 
     const handleResetFactory = () => {
-        localStorage.removeItem("dv_devices_v3");
-        localStorage.removeItem("dv_routines_v3");
+        localStorage.removeItem("dv_devices_v4");
+        localStorage.removeItem("dv_routines_v4");
         setDevices(initialDevices);
         setRoutines(initialRoutines);
-        afiseazaNotificare("Toate setările au fost readuse la valorile implicite.");
+        afiseazaNotificare("Toate datele au fost resetate la valorile din fabrică.");
     };
 
     const formatSecunde = (totalSecunde) => {
@@ -530,11 +585,8 @@ export default function App() {
         return acc + 1;
     }, 0);
 
-    // Poziția curentă pe hartă a robotului Roborock
     const robotPos = VACUUM_WAYPOINTS[activeDevice.pasTraseu || 0];
     const dockPos = VACUUM_WAYPOINTS[0];
-
-    // Traseul SVG parcurs până în acest moment
     const trailSlice = VACUUM_WAYPOINTS.slice(0, (activeDevice.pasTraseu || 0) + 1);
     const trailSvgPath = trailSlice.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" ");
 
@@ -632,7 +684,154 @@ export default function App() {
                             </div>
                         </header>
 
-                        {/* VEDERE CAMERĂ / CENTRALĂ */}
+                        {/* === TAB 1: OVERVIEW HOME === */}
+                        {activeTab === "home" && (
+                            <section className="overview-stage">
+                                <div className="home-summary-banner">
+                                    <div className="summary-stat">
+                                        <span className="s-label">Consum Electric Actual</span>
+                                        <span className="s-val">{consumTotalWatts.toFixed(1)} W</span>
+                                        <span className="s-sub">Contor inteligent local</span>
+                                    </div>
+                                    <div className="summary-stat">
+                                        <span className="s-label">Climă Interior / Balcon</span>
+                                        <span className="s-val">
+                      {devices.find((d) => d.id === 3)?.temperatura}°C &bull;{" "}
+                                            {devices.find((d) => d.id === 3)?.umiditate}%
+                    </span>
+                                        <span className="s-sub">Calitate aer optimă</span>
+                                    </div>
+                                    <div className="summary-stat">
+                                        <span className="s-label">Acțiuni Rapide Casă</span>
+                                        <div className="quick-global-actions">
+                                            <button
+                                                className="tiny-action-btn"
+                                                onClick={() => {
+                                                    setDevices((prev) => prev.map((d) => ({ ...d, online: true })));
+                                                    afiseazaNotificare("Toate dispozitivele au fost PORNITE.");
+                                                }}
+                                            >
+                                                ⚡ Pornește Tot
+                                            </button>
+                                            <button
+                                                className="tiny-action-btn danger"
+                                                onClick={() => {
+                                                    setDevices((prev) =>
+                                                        prev.map((d) =>
+                                                            d.tip === "climate"
+                                                                ? d
+                                                                : { ...d, online: false, inCuratare: false, inPreparare: false }
+                                                        )
+                                                    );
+                                                    afiseazaNotificare("Mod Eco activat: consumatorii mari au fost opriți.");
+                                                }}
+                                            >
+                                                🍃 Eco Standby
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="overview-devices-grid">
+                                    {devices.map((dev) => (
+                                        <article
+                                            key={dev.id}
+                                            className={`overview-card ${!dev.online ? "is-offline" : ""}`}
+                                            onClick={() => handleSelectDevice(dev)}
+                                        >
+                                            <div className="ov-card-top">
+                                                <div className="ov-icon-box">{dev.icon}</div>
+                                                <button
+                                                    className={`power-switch-btn small ${dev.online ? "on" : "off"}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        togglePower(dev.id);
+                                                    }}
+                                                >
+                                                    {dev.online ? "PORNIT" : "OPRIT"}
+                                                </button>
+                                            </div>
+
+                                            <div className="ov-card-mid">
+                                                <h4>{dev.nume}</h4>
+                                                <span className="ov-room-tag">
+                          {dev.camera} &bull; {dev.protocol}
+                        </span>
+                                            </div>
+
+                                            <div className="ov-card-bottom">
+                        <span className="ov-live-info">
+                          {!dev.online ? (
+                              "În Standby (0.5W)"
+                          ) : (
+                              <>
+                                  {dev.tip === "vacuum" &&
+                                      (dev.inCuratare
+                                          ? `Aspiră (${dev.suprafataCuratata} m²)`
+                                          : `Baterie ${dev.baterie}% • Dock`)}
+                                  {dev.tip === "media" && `${dev.sursaKey}: ${dev.titluMedia.slice(0, 20)}...`}
+                                  {dev.tip === "climate" && `${dev.temperatura}°C • Umiditate ${dev.umiditate}%`}
+                                  {dev.tip === "coffee" &&
+                                      (dev.inPreparare
+                                          ? `Prepară ${dev.bauturaSelectata}...`
+                                          : `Gata • ${dev.bauturaSelectata}`)}
+                              </>
+                          )}
+                        </span>
+                                                <span className="ov-open-link">Controlează ➔</span>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* === TAB 2: VEDERE RUTINE === */}
+                        {activeTab === "rutine" && (
+                            <section className="routines-view">
+                                <div className="routines-grid">
+                                    {routines.map((routine) => (
+                                        <article key={routine.id} className="routine-card">
+                                            <div className="routine-card-header">
+                                                <div className="routine-info">
+                                                    <span className="routine-icon">{routine.icon}</span>
+                                                    <div>
+                                                        <h4>{routine.titlu}</h4>
+                                                        <span className="routine-schedule">⏰ {routine.orar}</span>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    className={`round-toggle-btn ${routine.activa ? "active" : ""}`}
+                                                    onClick={() => toggleRoutineActive(routine.id)}
+                                                >
+                                                    <span className="round-toggle-thumb"></span>
+                                                </button>
+                                            </div>
+
+                                            <p className="routine-desc">{routine.descriere}</p>
+
+                                            <div className="routine-devices-tag">
+                                                {routine.dispozitiveAfectate.map((devName) => (
+                                                    <span key={devName} className="device-chip">
+                            {devName}
+                          </span>
+                                                ))}
+                                            </div>
+
+                                            <div className="routine-footer">
+                                                <button className="run-routine-btn" onClick={() => ruleazaRutina(routine.id)}>
+                                                    ▶ Rulează acum
+                                                </button>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* === TAB 3: VEDERE CAMERĂ FOCALIZATĂ === */}
                         {activeTab === "room" && (
                             <div className="hub-workspace">
                                 <section className="hub-center-stage">
@@ -668,11 +867,10 @@ export default function App() {
                                         ) : (
                                             <div className="center-card-body">
                                                 {/* ==============================================
-                            ROBOROCK VACUUM (Hartă, Mopping, Return & Charge)
+                            ROBOROCK VACUUM
                             ============================================== */}
                                                 {activeDevice.tip === "vacuum" && (
                                                     <div className="control-section">
-                                                        {/* Rândul de metrici cu statusul de încărcare */}
                                                         <div className="metrics-row">
                                                             <div className="mini-metric">
                                                                 <span className="m-label">Baterie</span>
@@ -696,7 +894,6 @@ export default function App() {
                                                             </div>
                                                         </div>
 
-                                                        {/* HARTA 2D CU TRASARE DINAMICĂ ȘI LINIE DE ÎNTOARCERE */}
                                                         <div className="room-map-viewport">
                                                             <div className="map-badge-overlay">
                                 <span className="map-live-tag">
@@ -713,29 +910,24 @@ export default function App() {
                                                                     <pattern id="carpetPattern" width="8" height="8" patternUnits="userSpaceOnUse">
                                                                         <path d="M 0 0 L 8 8 M 8 0 L 0 8" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
                                                                     </pattern>
-                                                                    {/* Gradient Mop (Umed Acvatic) */}
                                                                     <linearGradient id="mopTrailGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                                                                         <stop offset="0%" stopColor="#0284c7" stopOpacity="0.3" />
                                                                         <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.95" />
                                                                     </linearGradient>
-                                                                    {/* Gradient Uscat (Verde clasic) */}
                                                                     <linearGradient id="dryTrailGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                                                                         <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
                                                                         <stop offset="100%" stopColor="#34d399" stopOpacity="0.95" />
                                                                     </linearGradient>
                                                                 </defs>
 
-                                                                {/* Podea */}
                                                                 <rect x="15" y="15" width="370" height="170" rx="10" className="map-floor" />
                                                                 <line x1="385" y1="135" x2="385" y2="165" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                                                                 <text x="362" y="153" className="map-door-text">UȘĂ</text>
 
-                                                                {/* Covor central */}
                                                                 <rect x="130" y="60" width="140" height="85" rx="6" className="map-carpet" />
                                                                 <rect x="130" y="60" width="140" height="85" rx="6" fill="url(#carpetPattern)" />
                                                                 <text x="180" y="106" className="map-item-label">COVOR</text>
 
-                                                                {/* Mobilier */}
                                                                 <g className="furniture-item">
                                                                     <rect x="35" y="30" width="65" height="50" rx="6" className="furniture-body" />
                                                                     <rect x="35" y="30" width="14" height="50" rx="3" className="furniture-accent" />
@@ -750,14 +942,12 @@ export default function App() {
                                                                     <text x="314" y="43" className="map-item-label">TV STAND</text>
                                                                 </g>
 
-                                                                {/* Dock de încărcare */}
                                                                 <g className="dock-station">
                                                                     <rect x="35" y="148" width="28" height="24" rx="4" className="dock-base" />
                                                                     <path d="M 49 154 L 46 160 L 49 160 L 48 165 L 53 159 L 49 159 Z" fill="#fbbf24" />
                                                                     <text x="28" y="183" className="dock-text">DOCK</text>
                                                                 </g>
 
-                                                                {/* Traseul parcurs până acum de robot */}
                                                                 {activeDevice.pasTraseu > 0 && (
                                                                     <path
                                                                         d={trailSvgPath}
@@ -766,11 +956,9 @@ export default function App() {
                                                                         strokeWidth={activeDevice.mopActiv ? "7" : "5"}
                                                                         strokeLinecap="round"
                                                                         strokeLinejoin="round"
-                                                                        className="dynamic-trail-path"
                                                                     />
                                                                 )}
 
-                                                                {/* Linia punctată animată de întoarcere la Dock */}
                                                                 {activeDevice.seIntoarceLaDock && (
                                                                     <line
                                                                         x1={robotPos.x}
@@ -784,24 +972,22 @@ export default function App() {
                                                                     />
                                                                 )}
 
-                                                                {/* Unitatea fizică Roborock deplasată fluid prin CSS Transform */}
+                                                                {/* Robot cu mișcare lină și orientare după direcția de deplasare */}
                                                                 <g
                                                                     className="vacuum-bot-unit"
                                                                     style={{
-                                                                        transform: `translate(${robotPos.x}px, ${robotPos.y}px)`,
-                                                                        transition: "transform 1.2s cubic-bezier(0.25, 1, 0.5, 1)",
+                                                                        transform: `translate(${robotPos.x}px, ${robotPos.y}px) rotate(${activeDevice.unghi ?? -90}deg)`,
+                                                                        transition: "transform 1.2s linear",
+                                                                        transformOrigin: "0px 0px",
                                                                     }}
                                                                 >
-                                                                    {/* Fascicul LiDAR dacă este activ */}
                                                                     {(activeDevice.inCuratare || activeDevice.seIntoarceLaDock) && (
                                                                         <path d="M 0 0 L 26 -13 A 30 30 0 0 1 26 13 Z" className="lidar-cone" />
                                                                     )}
 
-                                                                    {/* Corp robot */}
                                                                     <circle cx="0" cy="0" r="13" className="bot-shell" />
                                                                     <circle cx="0" cy="0" r="10" className="bot-inner-ring" />
 
-                                                                    {/* Badge Mop pe robot dacă e activ */}
                                                                     {activeDevice.mopActiv && (
                                                                         <circle cx="-5" cy="5" r="3.5" fill="#0284c7" />
                                                                     )}
@@ -827,7 +1013,6 @@ export default function App() {
                                                             </div>
                                                         </div>
 
-                                                        {/* SECȚIUNE MOPPING (SPĂLARE CU APĂ) */}
                                                         <div className="mopping-control-panel">
                                                             <div className="mop-toggle-row">
                                                                 <div className="mop-title-wrap">
@@ -852,7 +1037,6 @@ export default function App() {
                                                                 </button>
                                                             </div>
 
-                                                            {/* Dacă mopul e bifat, apar setările de debit și rezervor */}
                                                             {activeDevice.mopActiv && (
                                                                 <div className="mop-options-grid">
                                                                     <div className="mop-water-flow">
@@ -893,7 +1077,6 @@ export default function App() {
                                                             )}
                                                         </div>
 
-                                                        {/* BUTOANE COMENZI */}
                                                         <div className="control-group">
                                                             <span className="group-title">Comenzi Utilizare</span>
                                                             <div className="button-cluster">
@@ -925,7 +1108,6 @@ export default function App() {
                                                             </div>
                                                         </div>
 
-                                                        {/* MOD ASPIRARE */}
                                                         <div className="control-group">
                                                             <span className="group-title">Putere de Aspirare</span>
                                                             <div className="mode-selector">
@@ -1162,7 +1344,6 @@ export default function App() {
                                     </div>
                                 </section>
 
-                                {/* COLOANA DREAPTA (DISPOZITIVE SECUNDARE) */}
                                 <aside className="hub-side-stage">
                                     <span className="side-title">Alte Dispozitive (Apasă pentru Focus)</span>
                                     <div className="side-cards-list">
@@ -1204,7 +1385,6 @@ export default function App() {
                             </div>
                         )}
 
-                        {/* BARA DE JOS */}
                         <footer className="hub-bottom-bar">
                             <div
                                 className="shortcut-pill clickable-pill"
@@ -1252,7 +1432,6 @@ export default function App() {
                     </main>
                 </div>
 
-                {/* MODAL DIAGNOZĂ */}
                 {diagnosticModal && (
                     <div className="diagnostic-modal-backdrop" onClick={() => setDiagnosticModal(null)}>
                         <div className="diagnostic-modal" onClick={(e) => e.stopPropagation()}>
@@ -1278,7 +1457,6 @@ export default function App() {
                     </div>
                 )}
 
-                {/* MODAL JURNAL */}
                 {showLogModal && (
                     <div className="diagnostic-modal-backdrop" onClick={() => setShowLogModal(false)}>
                         <div className="diagnostic-modal" onClick={(e) => e.stopPropagation()}>
