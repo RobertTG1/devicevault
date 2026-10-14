@@ -255,10 +255,17 @@ export default function App() {
         return () => clearInterval(timer);
     }, []);
 
-    // 1. Cronometru Google TV (Streaming & Gaming)
+    /// Extragem stările booleene pentru a decupla timerele
+    const vac = devices.find((d) => d.id === 1);
+    const isVacCleaning = Boolean(vac?.online && vac?.inCuratare);
+    const isVacCharging = Boolean(vac?.online && vac?.laDock && vac?.baterie < 100);
+
+    const tv = devices.find((d) => d.id === 2);
+    const isTvPlaying = Boolean(tv?.online && tv?.redare);
+
+    // 1. Cronometru Google TV (rulează independent)
     useEffect(() => {
-        const tv = devices.find((d) => d.id === 2);
-        if (!tv || !tv.online || !tv.redare) return;
+        if (!isTvPlaying) return;
 
         const interval = setInterval(() => {
             setDevices((prev) =>
@@ -280,12 +287,11 @@ export default function App() {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [devices]);
+    }, [isTvPlaying]);
 
-    // 2. Simulator Roborock: Deplasare cursivă
+    // 2. Deplasare Roborock (nu mai este resetată de televizor)
     useEffect(() => {
-        const vac = devices.find((d) => d.id === 1);
-        if (!vac || !vac.inCuratare || !vac.online) return;
+        if (!isVacCleaning) return;
 
         const interval = setInterval(() => {
             setDevices((prev) =>
@@ -327,12 +333,11 @@ export default function App() {
         }, 1200);
 
         return () => clearInterval(interval);
-    }, [devices]);
+    }, [isVacCleaning]);
 
-    // 3. Simulator Roborock: Încărcare dinamică la Dock
+    // 3. Încărcare dinamică la Dock
     useEffect(() => {
-        const vac = devices.find((d) => d.id === 1);
-        if (!vac || !vac.laDock || vac.baterie >= 100 || !vac.online || vac.inCuratare) return;
+        if (!isVacCharging) return;
 
         const interval = setInterval(() => {
             setDevices((prev) =>
@@ -354,7 +359,7 @@ export default function App() {
         }, 2000);
 
         return () => clearInterval(interval);
-    }, [devices]);
+    }, [isVacCharging]);
 
     // 4. Simulator preparare cafea Jura E8
     useEffect(() => {
