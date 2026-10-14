@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-// Traseu precis în interiorul Living-ului
+// Coordonate precise pe harta living-ului
 const VACUUM_WAYPOINTS = [
     { x: 49, y: 160 }, // 0: Dock
-    { x: 49, y: 95 },  // 1: Ieșire din dock spre stânga sus
+    { x: 49, y: 95 },  // 1: Ieșire dock spre stânga sus
     { x: 115, y: 95 }, // 2
     { x: 115, y: 55 }, // 3: Sub canapea
     { x: 165, y: 55 }, // 4
-    { x: 165, y: 145 },// 5: Coborâre pe covor
+    { x: 165, y: 145 },// 5: Coborâre covor
     { x: 210, y: 145 },// 6
     { x: 210, y: 60 }, // 7: Urcare covor
     { x: 255, y: 60 }, // 8
@@ -57,8 +57,8 @@ const MEDIA_SOURCES = {
         badge: "HDMI 2.1 VRR",
         titluMedia: "The Witcher 3: Wild Hunt • Next-Gen",
         codec: "RGB 10-Bit • 4K @ 120Hz G-Sync / VRR",
-        durataTotala: 0, // Nelimitat pentru sesiuni de gaming
-        progresInitial: 145, // 2 minute și 25 secunde de la pornirea jocului
+        durataTotala: 0, // Nelimitat
+        progresInitial: 145, // 2m 25s
         isGaming: true,
         themeClass: "theme-hdmi",
     },
@@ -128,7 +128,6 @@ const initialDevices = [
         calitateSemnal: "LQI 186",
         alertaActiva: false,
         pragAlerta: 28.0,
-        istoric: [20.4, 20.8, 21.2, 21.6, 22.1, 22.4, 22.9, 23.1, 22.8],
         consumWatts: 1,
         icon: "🌡️",
     },
@@ -195,22 +194,22 @@ const initialRoutines = [
 
 export default function App() {
     const [devices, setDevices] = useState(() => {
-        const saved = localStorage.getItem("dv_devices_v6");
+        const saved = localStorage.getItem("dv_devices_v7");
         return saved ? JSON.parse(saved) : initialDevices;
     });
 
     const [routines, setRoutines] = useState(() => {
-        const saved = localStorage.getItem("dv_routines_v6");
+        const saved = localStorage.getItem("dv_routines_v7");
         return saved ? JSON.parse(saved) : initialRoutines;
     });
 
     const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem("dv_dark_v6") === "true";
+        return localStorage.getItem("dv_dark_v7") === "true";
     });
 
     const [activeTab, setActiveTab] = useState("room");
-    const [selectedId, setSelectedId] = useState(2); // Focus inițial pe Google TV
-    const [cameraSelectata, setCameraSelectata] = useState("Dormitor");
+    const [selectedId, setSelectedId] = useState(4); // Focus pe Jura la prima vizualizare
+    const [cameraSelectata, setCameraSelectata] = useState("Bucătărie");
     const [oraCurenta, setOraCurenta] = useState("");
     const [dataCurenta, setDataCurenta] = useState("");
     const [notificare, setNotificare] = useState(null);
@@ -219,20 +218,20 @@ export default function App() {
 
     const [activityLog, setActivityLog] = useState([
         { timp: "12:00:10", text: "DeviceVault Hub inițializat (4 noduri active)." },
-        { timp: "12:05:22", text: "Google TV Streamer: Canal HDMI 2.1 eARC sincronizat." },
-        { timp: "12:12:45", text: "Roborock: Conexiune Wi-Fi stabilă, andocat la încărcare." },
+        { timp: "12:05:22", text: "Jura E8 Smart Espresso: P.E.P. Ready & Clătire efectuată." },
+        { timp: "12:12:45", text: "Aqara Sensor: Telemetrie Zigbee sincronizată." },
     ]);
 
     useEffect(() => {
-        localStorage.setItem("dv_devices_v6", JSON.stringify(devices));
+        localStorage.setItem("dv_devices_v7", JSON.stringify(devices));
     }, [devices]);
 
     useEffect(() => {
-        localStorage.setItem("dv_routines_v6", JSON.stringify(routines));
+        localStorage.setItem("dv_routines_v7", JSON.stringify(routines));
     }, [routines]);
 
     useEffect(() => {
-        localStorage.setItem("dv_dark_v6", String(darkMode));
+        localStorage.setItem("dv_dark_v7", String(darkMode));
     }, [darkMode]);
 
     const adaugaJurnal = (mesaj) => {
@@ -256,9 +255,7 @@ export default function App() {
         return () => clearInterval(timer);
     }, []);
 
-    // ==========================================================
-    // CRONOMETRU REDARE GOOGLE TV (Streaming Video & Sesiune Gaming)
-    // ==========================================================
+    // 1. Cronometru Google TV (Streaming & Gaming)
     useEffect(() => {
         const tv = devices.find((d) => d.id === 2);
         if (!tv || !tv.online || !tv.redare) return;
@@ -268,11 +265,9 @@ export default function App() {
                 prev.map((d) => {
                     if (d.id === 2 && d.online && d.redare) {
                         const isGaming = d.sursaKey === "HDMI 2";
-                        // Dacă este film normal și s-a atins sfârșitul, se oprește la final
                         if (!isGaming && d.durataTotalaSecunde > 0 && d.progresSecunde >= d.durataTotalaSecunde) {
                             return { ...d, redare: false, stare: "Redare finalizată" };
                         }
-                        // În caz normal sau gaming, timpul curge secundă cu secundă
                         return {
                             ...d,
                             progresSecunde: d.progresSecunde + 1,
@@ -287,7 +282,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, [devices]);
 
-    // Simulator Roborock: Deplasare cursivă
+    // 2. Simulator Roborock: Deplasare cursivă
     useEffect(() => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac || !vac.inCuratare || !vac.online) return;
@@ -334,7 +329,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, [devices]);
 
-    // Simulator Roborock: Încărcare dinamică la Dock
+    // 3. Simulator Roborock: Încărcare dinamică la Dock
     useEffect(() => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac || !vac.laDock || vac.baterie >= 100 || !vac.online || vac.inCuratare) return;
@@ -361,7 +356,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, [devices]);
 
-    // Simulator preparare cafea Jura E8
+    // 4. Simulator preparare cafea Jura E8
     useEffect(() => {
         const coffee = devices.find((d) => d.id === 4);
         if (!coffee || !coffee.inPreparare || !coffee.online) return;
@@ -442,6 +437,7 @@ export default function App() {
         if (logText) adaugaJurnal(logText);
     };
 
+    // Oprește instantaneu curățenia și glisează direct la dock
     const handleSendToDock = () => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac) return;
@@ -612,8 +608,8 @@ export default function App() {
     };
 
     const handleResetFactory = () => {
-        localStorage.removeItem("dv_devices_v6");
-        localStorage.removeItem("dv_routines_v6");
+        localStorage.removeItem("dv_devices_v7");
+        localStorage.removeItem("dv_routines_v7");
         setDevices(initialDevices);
         setRoutines(initialRoutines);
         afiseazaNotificare("Toate datele au fost resetate la valorile din fabrică.");
@@ -926,7 +922,7 @@ export default function App() {
                                         ) : (
                                             <div className="center-card-body">
                                                 {/* ==============================================
-                            ROBOROCK VACUUM
+                            1. ROBOROCK VACUUM
                             ============================================== */}
                                                 {activeDevice.tip === "vacuum" && (
                                                     <div className="control-section">
@@ -1193,7 +1189,7 @@ export default function App() {
                                                 )}
 
                                                 {/* ==============================================
-                            GOOGLE TV STREAMER (Streaming Video & Gaming)
+                            2. GOOGLE TV STREAMER (Streaming Video & Gaming)
                             ============================================== */}
                                                 {activeDevice.tip === "media" && (
                                                     <div className="control-section">
@@ -1205,7 +1201,6 @@ export default function App() {
                                                                 <span className="media-codec-tag">{activeDevice.codec}</span>
                                                             </div>
 
-                                                            {/* TIMELINE DINAMICĂ: GAMING (NELIMITAT) vs STREAMING NORMAL */}
                                                             {activeDevice.sursaKey === "HDMI 2" ? (
                                                                 <div className="media-timeline-wrapper gaming-timeline">
                                                                     <div className="timeline-time">
@@ -1238,7 +1233,6 @@ export default function App() {
                                                                 </div>
                                                             )}
 
-                                                            {/* COMENZI EXTINSE: ADAPTATE DUPĂ TIPUL DE CONȚINUT */}
                                                             <div className="media-extended-controls">
                                                                 {activeDevice.sursaKey === "HDMI 2" ? (
                                                                     <>
@@ -1358,7 +1352,9 @@ export default function App() {
                                                     </div>
                                                 )}
 
-                                                {/* AQARA SENSOR */}
+                                                {/* ==============================================
+                            3. AQARA CLIMATE SENSOR (Grafic + Calibrare + Alertă)
+                            ============================================== */}
                                                 {activeDevice.tip === "climate" && (
                                                     <div className="control-section">
                                                         <div className="climate-display-cards">
@@ -1373,6 +1369,37 @@ export default function App() {
                                                                 <span className="c-status">Nivel optim (40% - 60%)</span>
                                                             </div>
                                                         </div>
+
+                                                        {/* GRAFIC SPARKLINE CU ISTORIC PE 12 ORE */}
+                                                        <div className="sparkline-container">
+                                                            <div className="sparkline-header">
+                                                                <span className="group-title">Istoric Temperatură (Ultimele 12 ore)</span>
+                                                                <span className="sparkline-range">Min: 20.4°C &bull; Max: 23.1°C</span>
+                                                            </div>
+                                                            <div className="sparkline-chart-wrapper">
+                                                                <svg viewBox="0 0 300 65" className="sparkline-svg">
+                                                                    <defs>
+                                                                        <linearGradient id="climateGrad" x1="0" y1="0" x2="0" y2="1">
+                                                                            <stop offset="0%" stopColor="#10b981" stopOpacity="0.4" />
+                                                                            <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                                                                        </linearGradient>
+                                                                    </defs>
+                                                                    <polygon
+                                                                        fill="url(#climateGrad)"
+                                                                        points="0,60 0,45 35,40 70,35 105,30 140,24 175,20 210,14 245,10 280,16 300,16 300,60"
+                                                                    />
+                                                                    <polyline
+                                                                        fill="none"
+                                                                        stroke="#10b981"
+                                                                        strokeWidth="3"
+                                                                        strokeLinecap="round"
+                                                                        points="0,45 35,40 70,35 105,30 140,24 175,20 210,14 245,10 280,16 300,16"
+                                                                    />
+                                                                    <circle cx="300" cy="16" r="4.5" fill="#047857" stroke="#ffffff" strokeWidth="2" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+
                                                         <div className="control-group">
                                                             <span className="group-title">Telemetrie & Rețea</span>
                                                             <div className="metrics-row">
@@ -1390,10 +1417,48 @@ export default function App() {
                                                                 </div>
                                                             </div>
                                                         </div>
+
+                                                        {/* BUTOANE CALIBRARE ȘI ALERTĂ TERMICĂ */}
+                                                        <div className="control-group">
+                                                            <div className="button-cluster">
+                                                                <button
+                                                                    className="action-btn secondary"
+                                                                    onClick={() =>
+                                                                        updateDevice(
+                                                                            activeDevice.id,
+                                                                            {
+                                                                                temperatura: Number((activeDevice.temperatura + 0.1).toFixed(1)),
+                                                                            },
+                                                                            "Aqara Sensor: Recalibrare manuală efectuată (+0.1°C)"
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    🔄 Recalibrează Valori (+0.1°C)
+                                                                </button>
+                                                                <button
+                                                                    className={`action-btn secondary ${activeDevice.alertaActiva ? "active" : ""}`}
+                                                                    onClick={() =>
+                                                                        updateDevice(
+                                                                            activeDevice.id,
+                                                                            {
+                                                                                alertaActiva: !activeDevice.alertaActiva,
+                                                                            },
+                                                                            `Aqara Sensor: Alertă termică ${
+                                                                                !activeDevice.alertaActiva ? "ACTIVATĂ" : "DEZACTIVATĂ"
+                                                                            }`
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    🔔 {activeDevice.alertaActiva ? "Dezactivează Alertă" : "Activează Alertă Termică"}
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 )}
 
-                                                {/* JURA ESPRESSO */}
+                                                {/* ==============================================
+                            4. JURA E8 SMART ESPRESSO (Bucătărie)
+                            ============================================== */}
                                                 {activeDevice.tip === "coffee" && (
                                                     <div className="control-section">
                                                         <div className="metrics-row">
@@ -1410,6 +1475,7 @@ export default function App() {
                                                                 <span className="m-val">{activeDevice.cafeleAzi} cești</span>
                                                             </div>
                                                         </div>
+
                                                         <div className="coffee-status-banner">
                                                             <div className="coffee-banner-top">
                                                                 <div>
@@ -1427,6 +1493,7 @@ export default function App() {
                                                                 </div>
                                                             )}
                                                         </div>
+
                                                         <div className="control-group">
                                                             <span className="group-title">Selectează Specialitatea</span>
                                                             <div className="mode-selector">
@@ -1452,17 +1519,60 @@ export default function App() {
                                                                 ))}
                                                             </div>
                                                         </div>
+
+                                                        {/* SLIDER PENTRU INTENSITATEA BOABELOR ȘI VOLUM */}
+                                                        <div className="control-group">
+                              <span className="group-title">
+                                Intensitate Aromă ({activeDevice.intensitateBoabe} / 5 boabe) &bull; Volum: {activeDevice.volumApaMl} ml
+                              </span>
+                                                            <div className="volume-slider-box">
+                                                                <span>☕</span>
+                                                                <input
+                                                                    type="range"
+                                                                    min="1"
+                                                                    max="5"
+                                                                    value={activeDevice.intensitateBoabe}
+                                                                    onChange={(e) =>
+                                                                        updateDevice(activeDevice.id, {
+                                                                            intensitateBoabe: Number(e.target.value),
+                                                                        })
+                                                                    }
+                                                                    className="range-input"
+                                                                />
+                                                                <span>🔥</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* BUTON DE PREPARARE ȘI BUTON DE REUMPLERE APĂ & BOABE */}
                                                         <div className="button-cluster">
                                                             <button
                                                                 className={`action-btn primary ${activeDevice.inPreparare ? "active" : ""}`}
                                                                 onClick={() =>
-                                                                    updateDevice(activeDevice.id, {
-                                                                        inPreparare: !activeDevice.inPreparare,
-                                                                        progresPreparare: activeDevice.inPreparare ? 0 : 10,
-                                                                    })
+                                                                    updateDevice(
+                                                                        activeDevice.id,
+                                                                        {
+                                                                            inPreparare: !activeDevice.inPreparare,
+                                                                            progresPreparare: activeDevice.inPreparare ? 0 : 10,
+                                                                        },
+                                                                        `Jura E8: Pornit preparare ${activeDevice.bauturaSelectata} (${activeDevice.volumApaMl}ml)`
+                                                                    )
                                                                 }
                                                             >
                                                                 {activeDevice.inPreparare ? "⏹ Oprește Extracția" : `▶ Prepară ${activeDevice.bauturaSelectata}`}
+                                                            </button>
+
+                                                            <button
+                                                                className="action-btn secondary"
+                                                                onClick={() => {
+                                                                    updateDevice(activeDevice.id, {
+                                                                        nivelApa: 100,
+                                                                        nivelBoabe: 100,
+                                                                        stare: "Rezervor apă & boabe completate (100%)",
+                                                                    });
+                                                                    afiseazaNotificare("Jura E8: Rezervor apă și boabe reumplute la 100%!");
+                                                                }}
+                                                            >
+                                                                💧 Reumple Apă & Boabe
                                                             </button>
                                                         </div>
                                                     </div>
