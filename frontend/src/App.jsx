@@ -29,6 +29,7 @@ const MEDIA_SOURCES = {
         codec: "HEVC Main 10 • Dolby Atmos 7.1",
         durataTotala: 10140,
         progresInitial: 2535,
+        isGaming: false,
         themeClass: "theme-plex",
     },
     YouTube: {
@@ -38,6 +39,7 @@ const MEDIA_SOURCES = {
         codec: "VP9.2 HDR • 2160p @ 60fps • Opus",
         durataTotala: 1420,
         progresInitial: 410,
+        isGaming: false,
         themeClass: "theme-youtube",
     },
     "Apple TV": {
@@ -47,6 +49,7 @@ const MEDIA_SOURCES = {
         codec: "Dolby Vision • Spatial Audio Atmos",
         durataTotala: 3480,
         progresInitial: 1290,
+        isGaming: false,
         themeClass: "theme-apple",
     },
     "HDMI 2": {
@@ -54,8 +57,9 @@ const MEDIA_SOURCES = {
         badge: "HDMI 2.1 VRR",
         titluMedia: "The Witcher 3: Wild Hunt • Next-Gen",
         codec: "RGB 10-Bit • 4K @ 120Hz G-Sync / VRR",
-        durataTotala: 7200,
-        progresInitial: 3600,
+        durataTotala: 0, // Nelimitat pentru sesiuni de gaming
+        progresInitial: 145, // 2 minute și 25 secunde de la pornirea jocului
+        isGaming: true,
         themeClass: "theme-hdmi",
     },
 };
@@ -103,6 +107,7 @@ const initialDevices = [
         themeClass: "theme-plex",
         progresSecunde: 2535,
         durataTotalaSecunde: 10140,
+        isGaming: false,
         volum: 45,
         mut: false,
         redare: true,
@@ -172,7 +177,7 @@ const initialRoutines = [
         id: "movie",
         titlu: "Seară de Film (Cinema)",
         icon: "🎬",
-        descriere: "Pornește Google TV pe Plex 4K (volum 55%) și pune Roborock în pauză la dock.",
+        descriere: "Pornește Google TV pe Plex 4K (volum 55%) și trimite Roborock direct la dock.",
         orar: "Pornire manuală / Trigger",
         activa: true,
         dispozitiveAfectate: ["Google TV Streamer", "Roborock Robot Vacuum"],
@@ -190,22 +195,22 @@ const initialRoutines = [
 
 export default function App() {
     const [devices, setDevices] = useState(() => {
-        const saved = localStorage.getItem("dv_devices_v5");
+        const saved = localStorage.getItem("dv_devices_v6");
         return saved ? JSON.parse(saved) : initialDevices;
     });
 
     const [routines, setRoutines] = useState(() => {
-        const saved = localStorage.getItem("dv_routines_v5");
+        const saved = localStorage.getItem("dv_routines_v6");
         return saved ? JSON.parse(saved) : initialRoutines;
     });
 
     const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem("dv_dark_v5") === "true";
+        return localStorage.getItem("dv_dark_v6") === "true";
     });
 
     const [activeTab, setActiveTab] = useState("room");
-    const [selectedId, setSelectedId] = useState(1);
-    const [cameraSelectata, setCameraSelectata] = useState("Living");
+    const [selectedId, setSelectedId] = useState(2); // Focus inițial pe Google TV
+    const [cameraSelectata, setCameraSelectata] = useState("Dormitor");
     const [oraCurenta, setOraCurenta] = useState("");
     const [dataCurenta, setDataCurenta] = useState("");
     const [notificare, setNotificare] = useState(null);
@@ -214,20 +219,20 @@ export default function App() {
 
     const [activityLog, setActivityLog] = useState([
         { timp: "12:00:10", text: "DeviceVault Hub inițializat (4 noduri active)." },
-        { timp: "12:05:22", text: "Aqara Sensor: Telemetrie Zigbee sincronizată." },
-        { timp: "12:12:45", text: "Roborock: Conexiune Wi-Fi stabilă, pregătit de lucru." },
+        { timp: "12:05:22", text: "Google TV Streamer: Canal HDMI 2.1 eARC sincronizat." },
+        { timp: "12:12:45", text: "Roborock: Conexiune Wi-Fi stabilă, andocat la încărcare." },
     ]);
 
     useEffect(() => {
-        localStorage.setItem("dv_devices_v5", JSON.stringify(devices));
+        localStorage.setItem("dv_devices_v6", JSON.stringify(devices));
     }, [devices]);
 
     useEffect(() => {
-        localStorage.setItem("dv_routines_v5", JSON.stringify(routines));
+        localStorage.setItem("dv_routines_v6", JSON.stringify(routines));
     }, [routines]);
 
     useEffect(() => {
-        localStorage.setItem("dv_dark_v5", String(darkMode));
+        localStorage.setItem("dv_dark_v6", String(darkMode));
     }, [darkMode]);
 
     const adaugaJurnal = (mesaj) => {
@@ -251,7 +256,38 @@ export default function App() {
         return () => clearInterval(timer);
     }, []);
 
-    // 1. Simulator Roborock: Deplasare cursivă și rotire dinamică LiDAR în timpul curățeniei
+    // ==========================================================
+    // CRONOMETRU REDARE GOOGLE TV (Streaming Video & Sesiune Gaming)
+    // ==========================================================
+    useEffect(() => {
+        const tv = devices.find((d) => d.id === 2);
+        if (!tv || !tv.online || !tv.redare) return;
+
+        const interval = setInterval(() => {
+            setDevices((prev) =>
+                prev.map((d) => {
+                    if (d.id === 2 && d.online && d.redare) {
+                        const isGaming = d.sursaKey === "HDMI 2";
+                        // Dacă este film normal și s-a atins sfârșitul, se oprește la final
+                        if (!isGaming && d.durataTotalaSecunde > 0 && d.progresSecunde >= d.durataTotalaSecunde) {
+                            return { ...d, redare: false, stare: "Redare finalizată" };
+                        }
+                        // În caz normal sau gaming, timpul curge secundă cu secundă
+                        return {
+                            ...d,
+                            progresSecunde: d.progresSecunde + 1,
+                            stare: isGaming ? "Sesiune joc în desfășurare" : "Redare activă",
+                        };
+                    }
+                    return d;
+                })
+            );
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [devices]);
+
+    // Simulator Roborock: Deplasare cursivă
     useEffect(() => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac || !vac.inCuratare || !vac.online) return;
@@ -298,7 +334,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, [devices]);
 
-    // 2. Simulator Roborock: Încărcare dinamică la Dock până la 100%
+    // Simulator Roborock: Încărcare dinamică la Dock
     useEffect(() => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac || !vac.laDock || vac.baterie >= 100 || !vac.online || vac.inCuratare) return;
@@ -325,7 +361,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, [devices]);
 
-    // 3. Simulator preparare cafea Jura E8
+    // Simulator preparare cafea Jura E8
     useEffect(() => {
         const coffee = devices.find((d) => d.id === 4);
         if (!coffee || !coffee.inPreparare || !coffee.online) return;
@@ -393,7 +429,7 @@ export default function App() {
         setDevices((prev) =>
             prev.map((d) =>
                 d.id === id
-                    ? { ...d, online: !d.online, inCuratare: false, seIntoarceLaDock: false, inPreparare: false }
+                    ? { ...d, online: !d.online, inCuratare: false, seIntoarceLaDock: false, inPreparare: false, redare: false }
                     : d
             )
         );
@@ -406,7 +442,6 @@ export default function App() {
         if (logText) adaugaJurnal(logText);
     };
 
-    // OPREȘTE INSTANTANEU CURĂȚENIA ȘI MERGE DIRECT LA DOCK
     const handleSendToDock = () => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac) return;
@@ -417,9 +452,8 @@ export default function App() {
         }
 
         const currentPos = vac.pozitieCustom || VACUUM_WAYPOINTS[vac.pasTraseu || 0];
-        const dockPos = VACUUM_WAYPOINTS[0]; // { x: 49, y: 160 }
+        const dockPos = VACUUM_WAYPOINTS[0];
 
-        // Calculăm unghiul direct spre Dock
         const dx = dockPos.x - currentPos.x;
         const dy = dockPos.y - currentPos.y;
         const unghiTinta = Math.atan2(dy, dx) * (180 / Math.PI);
@@ -427,11 +461,9 @@ export default function App() {
         const dif = ((unghiTinta - (unghiCurent % 360) + 540) % 360) - 180;
         const unghiOrientare = unghiCurent + dif;
 
-        // Salvăm traseul parcurs până acum pentru a rămâne desenat pe hartă
         const punctePanaAcum = VACUUM_WAYPOINTS.slice(0, (vac.pasTraseu || 0) + 1);
         const trailSaved = punctePanaAcum.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" ");
 
-        // Pas 1: Oprește curățenia imediat, îngheață poziția și se rotește spre Dock
         updateDevice(
             1,
             {
@@ -448,18 +480,14 @@ export default function App() {
         );
         afiseazaNotificare("Curățenie oprită. Roborock se întoarce direct la Dock!");
 
-        // Pas 2: După 350ms (rotire), glisează direct în linie dreaptă spre Dock
         setTimeout(() => {
             setDevices((prev) =>
                 prev.map((d) =>
-                    d.id === 1 && d.seIntoarceLaDock
-                        ? { ...d, pozitieCustom: dockPos }
-                        : d
+                    d.id === 1 && d.seIntoarceLaDock ? { ...d, pozitieCustom: dockPos } : d
                 )
             );
         }, 350);
 
-        // Pas 3: Când a atins Dock-ul (după 2.4s de mers lin)
         setTimeout(() => {
             setDevices((prev) =>
                 prev.map((d) =>
@@ -494,8 +522,10 @@ export default function App() {
                 codec: meta.codec,
                 durataTotalaSecunde: meta.durataTotala,
                 progresSecunde: meta.progresInitial,
+                isGaming: meta.isGaming,
                 themeClass: meta.themeClass,
                 redare: true,
+                stare: meta.isGaming ? "Sesiune joc în desfășurare" : "Redare activă",
             },
             `Google TV: Sursa schimbată pe ${srcKey} (${meta.titluMedia})`
         );
@@ -532,7 +562,7 @@ export default function App() {
                 })
             );
             handleSendToDock();
-            afiseazaNotificare("Rutina „Noapte Bună”: Roborock revine direct la Dock în mod Silent.");
+            afiseazaNotificare("Rutina „Noapte Bună”: Dispozitive oprite, Roborock revine la Dock.");
         } else if (id === "movie") {
             const plexMeta = MEDIA_SOURCES["Plex 4K"];
             setDevices((prev) =>
@@ -549,6 +579,9 @@ export default function App() {
                             titluMedia: plexMeta.titluMedia,
                             codec: plexMeta.codec,
                             themeClass: plexMeta.themeClass,
+                            durataTotalaSecunde: plexMeta.durataTotala,
+                            progresSecunde: plexMeta.progresInitial,
+                            isGaming: false,
                         };
                     return d;
                 })
@@ -579,8 +612,8 @@ export default function App() {
     };
 
     const handleResetFactory = () => {
-        localStorage.removeItem("dv_devices_v5");
-        localStorage.removeItem("dv_routines_v5");
+        localStorage.removeItem("dv_devices_v6");
+        localStorage.removeItem("dv_routines_v6");
         setDevices(initialDevices);
         setRoutines(initialRoutines);
         afiseazaNotificare("Toate datele au fost resetate la valorile din fabrică.");
@@ -743,7 +776,7 @@ export default function App() {
                                                         prev.map((d) =>
                                                             d.tip === "climate"
                                                                 ? d
-                                                                : { ...d, online: false, inCuratare: false, inPreparare: false }
+                                                                : { ...d, online: false, inCuratare: false, inPreparare: false, redare: false }
                                                         )
                                                     );
                                                     afiseazaNotificare("Mod Eco activat: consumatorii mari au fost opriți.");
@@ -792,7 +825,10 @@ export default function App() {
                                       (dev.inCuratare
                                           ? `Aspiră (${dev.suprafataCuratata} m²)`
                                           : `Baterie ${dev.baterie}% • Dock`)}
-                                  {dev.tip === "media" && `${dev.sursaKey}: ${dev.titluMedia.slice(0, 20)}...`}
+                                  {dev.tip === "media" &&
+                                      (dev.sursaKey === "HDMI 2"
+                                          ? `Gaming: ${formatSecunde(dev.progresSecunde)}`
+                                          : `${dev.sursaKey}: ${dev.titluMedia.slice(0, 18)}...`)}
                                   {dev.tip === "climate" && `${dev.temperatura}°C • Umiditate ${dev.umiditate}%`}
                                   {dev.tip === "coffee" &&
                                       (dev.inPreparare
@@ -971,7 +1007,6 @@ export default function App() {
                                                                     <text x="28" y="183" className="dock-text">DOCK</text>
                                                                 </g>
 
-                                                                {/* Dâra curățată păstrată pe ecran */}
                                                                 {(activeDevice.traseuSalvat || activeDevice.pasTraseu > 0) && (
                                                                     <path
                                                                         d={activeDevice.traseuSalvat || trailSvgPath}
@@ -983,7 +1018,6 @@ export default function App() {
                                                                     />
                                                                 )}
 
-                                                                {/* Linia directă punctată animată spre Dock */}
                                                                 {activeDevice.seIntoarceLaDock && activeDevice.pozitieOprire && (
                                                                     <line
                                                                         x1={activeDevice.pozitieOprire.x}
@@ -997,7 +1031,6 @@ export default function App() {
                                                                     />
                                                                 )}
 
-                                                                {/* Robotul deplasat lin (linear la curățenie, direct ease-in-out spre dock) */}
                                                                 <g
                                                                     className="vacuum-bot-unit"
                                                                     style={{
@@ -1159,7 +1192,9 @@ export default function App() {
                                                     </div>
                                                 )}
 
-                                                {/* GOOGLE TV */}
+                                                {/* ==============================================
+                            GOOGLE TV STREAMER (Streaming Video & Gaming)
+                            ============================================== */}
                                                 {activeDevice.tip === "media" && (
                                                     <div className="control-section">
                                                         <div className={`media-playback-card ${activeDevice.themeClass || "theme-plex"}`}>
@@ -1169,62 +1204,124 @@ export default function App() {
                                                                 <h4 className="media-track-title">{activeDevice.titluMedia}</h4>
                                                                 <span className="media-codec-tag">{activeDevice.codec}</span>
                                                             </div>
-                                                            <div className="media-timeline-wrapper">
-                                                                <div className="timeline-time">
-                                                                    <span>{formatSecunde(activeDevice.progresSecunde)}</span>
-                                                                    <span>{formatSecunde(activeDevice.durataTotalaSecunde)}</span>
+
+                                                            {/* TIMELINE DINAMICĂ: GAMING (NELIMITAT) vs STREAMING NORMAL */}
+                                                            {activeDevice.sursaKey === "HDMI 2" ? (
+                                                                <div className="media-timeline-wrapper gaming-timeline">
+                                                                    <div className="timeline-time">
+                                                                        <span>Timp Sesiune Joc: <strong>{formatSecunde(activeDevice.progresSecunde)}</strong></span>
+                                                                        <span className="gaming-badge-live">
+                                      <span className={`live-dot ${activeDevice.redare ? "pulse" : ""}`}></span>
+                                                                            {activeDevice.redare ? "SESIUNE LIVE • NELIMITAT" : "JOC ÎN PAUZĂ"}
+                                    </span>
+                                                                    </div>
+                                                                    <div className="gaming-live-track">
+                                                                        <div className={`gaming-live-bar ${activeDevice.redare ? "animating" : ""}`}></div>
+                                                                    </div>
                                                                 </div>
-                                                                <input
-                                                                    type="range"
-                                                                    min="0"
-                                                                    max={activeDevice.durataTotalaSecunde}
-                                                                    value={activeDevice.progresSecunde}
-                                                                    onChange={(e) =>
-                                                                        updateDevice(activeDevice.id, { progresSecunde: Number(e.target.value) })
-                                                                    }
-                                                                    className="timeline-slider"
-                                                                />
-                                                            </div>
+                                                            ) : (
+                                                                <div className="media-timeline-wrapper">
+                                                                    <div className="timeline-time">
+                                                                        <span>{formatSecunde(activeDevice.progresSecunde)}</span>
+                                                                        <span>{formatSecunde(activeDevice.durataTotalaSecunde)}</span>
+                                                                    </div>
+                                                                    <input
+                                                                        type="range"
+                                                                        min="0"
+                                                                        max={activeDevice.durataTotalaSecunde}
+                                                                        value={activeDevice.progresSecunde}
+                                                                        onChange={(e) =>
+                                                                            updateDevice(activeDevice.id, { progresSecunde: Number(e.target.value) })
+                                                                        }
+                                                                        className="timeline-slider"
+                                                                    />
+                                                                </div>
+                                                            )}
+
+                                                            {/* COMENZI EXTINSE: ADAPTATE DUPĂ TIPUL DE CONȚINUT */}
                                                             <div className="media-extended-controls">
-                                                                <button
-                                                                    className="media-circle-btn"
-                                                                    onClick={() =>
-                                                                        updateDevice(activeDevice.id, {
-                                                                            progresSecunde: Math.max(0, activeDevice.progresSecunde - 30),
-                                                                        })
-                                                                    }
-                                                                >
-                                                                    ⏪ 30s
-                                                                </button>
-                                                                <button
-                                                                    className="media-play-pill-btn"
-                                                                    onClick={() =>
-                                                                        updateDevice(activeDevice.id, { redare: !activeDevice.redare })
-                                                                    }
-                                                                >
-                                                                    {activeDevice.redare ? "⏸ Pauză" : "▶ Redă"}
-                                                                </button>
-                                                                <button
-                                                                    className="media-circle-btn"
-                                                                    onClick={() =>
-                                                                        updateDevice(activeDevice.id, {
-                                                                            progresSecunde: Math.min(activeDevice.durataTotalaSecunde, activeDevice.progresSecunde + 30),
-                                                                        })
-                                                                    }
-                                                                >
-                                                                    30s ⏩
-                                                                </button>
-                                                                <button
-                                                                    className={`media-circle-btn ${activeDevice.mut ? "active-muted" : ""}`}
-                                                                    onClick={() => updateDevice(activeDevice.id, { mut: !activeDevice.mut })}
-                                                                >
-                                                                    {activeDevice.mut ? "🔇 Mut" : "🔊 Activ"}
-                                                                </button>
+                                                                {activeDevice.sursaKey === "HDMI 2" ? (
+                                                                    <>
+                                                                        <button
+                                                                            className="media-circle-btn"
+                                                                            onClick={() =>
+                                                                                updateDevice(activeDevice.id, { progresSecunde: 0 }, "Google TV: Cronometru sesiune joc resetat la 00:00")
+                                                                            }
+                                                                            title="Resetează cronometrul sesiunii"
+                                                                        >
+                                                                            ⏱️ Reset Sesiune
+                                                                        </button>
+                                                                        <button
+                                                                            className="media-play-pill-btn"
+                                                                            onClick={() =>
+                                                                                updateDevice(
+                                                                                    activeDevice.id,
+                                                                                    { redare: !activeDevice.redare },
+                                                                                    `Google TV: ${!activeDevice.redare ? "Joc reluat (cronometru pornit)" : "Joc pus în pauză"}`
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {activeDevice.redare ? "⏸ Pauză Joc" : "▶ Reia Joc"}
+                                                                        </button>
+                                                                        <button
+                                                                            className={`media-circle-btn ${activeDevice.mut ? "active-muted" : ""}`}
+                                                                            onClick={() => updateDevice(activeDevice.id, { mut: !activeDevice.mut })}
+                                                                        >
+                                                                            {activeDevice.mut ? "🔇 Mut" : "🔊 Audio"}
+                                                                        </button>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <button
+                                                                            className="media-circle-btn"
+                                                                            onClick={() =>
+                                                                                updateDevice(activeDevice.id, {
+                                                                                    progresSecunde: Math.max(0, activeDevice.progresSecunde - 30),
+                                                                                })
+                                                                            }
+                                                                        >
+                                                                            ⏪ 30s
+                                                                        </button>
+                                                                        <button
+                                                                            className="media-play-pill-btn"
+                                                                            onClick={() =>
+                                                                                updateDevice(
+                                                                                    activeDevice.id,
+                                                                                    { redare: !activeDevice.redare },
+                                                                                    `Google TV: ${!activeDevice.redare ? "Redare pornită" : "Redare în pauză"}`
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {activeDevice.redare ? "⏸ Pauză" : "▶ Redă"}
+                                                                        </button>
+                                                                        <button
+                                                                            className="media-circle-btn"
+                                                                            onClick={() =>
+                                                                                updateDevice(activeDevice.id, {
+                                                                                    progresSecunde: Math.min(
+                                                                                        activeDevice.durataTotalaSecunde,
+                                                                                        activeDevice.progresSecunde + 30
+                                                                                    ),
+                                                                                })
+                                                                            }
+                                                                        >
+                                                                            30s ⏩
+                                                                        </button>
+                                                                        <button
+                                                                            className={`media-circle-btn ${activeDevice.mut ? "active-muted" : ""}`}
+                                                                            onClick={() => updateDevice(activeDevice.id, { mut: !activeDevice.mut })}
+                                                                        >
+                                                                            {activeDevice.mut ? "🔇 Mut" : "🔊 Activ"}
+                                                                        </button>
+                                                                    </>
+                                                                )}
                                                             </div>
                                                         </div>
 
                                                         <div className="control-group">
-                                                            <span className="group-title">Ajustare Volum ({activeDevice.mut ? "MUT" : `${activeDevice.volum}%`})</span>
+                              <span className="group-title">
+                                Ajustare Volum ({activeDevice.mut ? "MUT" : `${activeDevice.volum}%`})
+                              </span>
                                                             <div className="volume-slider-box">
                                                                 <span>🔈</span>
                                                                 <input
@@ -1233,7 +1330,10 @@ export default function App() {
                                                                     max="100"
                                                                     value={activeDevice.mut ? 0 : activeDevice.volum}
                                                                     onChange={(e) =>
-                                                                        updateDevice(activeDevice.id, { volum: Number(e.target.value), mut: false })
+                                                                        updateDevice(activeDevice.id, {
+                                                                            volum: Number(e.target.value),
+                                                                            mut: false,
+                                                                        })
                                                                     }
                                                                     className="range-input"
                                                                 />

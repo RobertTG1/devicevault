@@ -766,7 +766,9 @@ body {
   font-weight: 600;
 }
 
-/* MEDIA */
+/* ==============================================
+   MEDIA PLAYER & GAMING LIVE HUD
+   ============================================== */
 .media-playback-card {
   color: #ffffff;
   border-radius: 18px;
@@ -781,7 +783,7 @@ body {
 .media-playback-card.theme-plex { background: linear-gradient(145deg, #0284c7 0%, #0369a1 100%); }
 .media-playback-card.theme-youtube { background: linear-gradient(145deg, #dc2626 0%, #991b1b 100%); }
 .media-playback-card.theme-apple { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); }
-.media-playback-card.theme-hdmi { background: linear-gradient(145deg, #4f46e5 0%, #3730a3 100%); }
+.media-playback-card.theme-hdmi { background: linear-gradient(145deg, #4f46e5 0%, #312e81 100%); }
 
 .media-poster-badge {
   position: absolute;
@@ -797,8 +799,66 @@ body {
 .media-source-tag { font-size: 0.72rem; opacity: 0.85; text-transform: uppercase; }
 .media-track-title { margin: 2px 0; font-size: 1.12rem; font-weight: 700; }
 .media-codec-tag { font-size: 0.72rem; opacity: 0.9; }
+
 .timeline-time { display: flex; justify-content: space-between; font-size: 0.72rem; font-family: monospace; }
 .timeline-slider { width: 100%; accent-color: #ffffff; cursor: pointer; }
+
+/* STILURI SPECIFICE PENTRU TIMELINE GAMING */
+.gaming-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gaming-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #c7d2fe;
+}
+
+.gaming-badge-live .live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #818cf8;
+}
+
+.gaming-badge-live .live-dot.pulse {
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: mapPulse 1.1s infinite ease-in-out;
+}
+
+.gaming-live-track {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gaming-live-bar {
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #818cf8, #38bdf8, transparent);
+  border-radius: 6px;
+  opacity: 0.35;
+}
+
+.gaming-live-bar.animating {
+  opacity: 1;
+  animation: gamingLiveScan 2.2s infinite linear;
+}
+
+@keyframes gamingLiveScan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
 
 .media-extended-controls {
   display: flex;
@@ -1129,7 +1189,7 @@ body {
 .round-toggle-btn.active .round-toggle-thumb { transform: translateX(20px); }
 
 /* ==========================================================
-   FIX RESPONSIVE MOBIL (PORTRAIT & LANDSCAPE 100VW)
+   FIX RESPONSIVE MOBIL
    ========================================================== */
 @media (max-width: 900px) {
   body {
