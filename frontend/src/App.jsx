@@ -17,8 +17,8 @@ const VACUUM_WAYPOINTS = [
     { x: 300, y: 60 }, // 11: Urcare lângă TV
     { x: 345, y: 60 }, // 12
     { x: 345, y: 140 },// 13: Ocolire ușă
-    { x: 130, y: 150 },// 14: Diagonală de revenire
-    { x: 49, y: 160 }, // 15: Andocare la încărcător
+    { x: 130, y: 150 },// 14: Diagonală
+    { x: 49, y: 160 }, // 15: Dock
 ];
 
 const MEDIA_SOURCES = {
@@ -75,7 +75,10 @@ const initialDevices = [
         seIntoarceLaDock: false,
         laDock: true,
         pasTraseu: 0,
-        unghi: -90, // Orientat în sus spre cameră la pornire
+        pozitieCustom: null,
+        pozitieOprire: null,
+        traseuSalvat: null,
+        unghi: -90,
         mopActiv: true,
         debitApa: "Mediu",
         nivelApaMop: 88,
@@ -187,20 +190,20 @@ const initialRoutines = [
 
 export default function App() {
     const [devices, setDevices] = useState(() => {
-        const saved = localStorage.getItem("dv_devices_v4");
+        const saved = localStorage.getItem("dv_devices_v5");
         return saved ? JSON.parse(saved) : initialDevices;
     });
 
     const [routines, setRoutines] = useState(() => {
-        const saved = localStorage.getItem("dv_routines_v4");
+        const saved = localStorage.getItem("dv_routines_v5");
         return saved ? JSON.parse(saved) : initialRoutines;
     });
 
     const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem("dv_dark_v4") === "true";
+        return localStorage.getItem("dv_dark_v5") === "true";
     });
 
-    const [activeTab, setActiveTab] = useState("room"); // "home", "room", "rutine"
+    const [activeTab, setActiveTab] = useState("room");
     const [selectedId, setSelectedId] = useState(1);
     const [cameraSelectata, setCameraSelectata] = useState("Living");
     const [oraCurenta, setOraCurenta] = useState("");
@@ -216,15 +219,15 @@ export default function App() {
     ]);
 
     useEffect(() => {
-        localStorage.setItem("dv_devices_v4", JSON.stringify(devices));
+        localStorage.setItem("dv_devices_v5", JSON.stringify(devices));
     }, [devices]);
 
     useEffect(() => {
-        localStorage.setItem("dv_routines_v4", JSON.stringify(routines));
+        localStorage.setItem("dv_routines_v5", JSON.stringify(routines));
     }, [routines]);
 
     useEffect(() => {
-        localStorage.setItem("dv_dark_v4", String(darkMode));
+        localStorage.setItem("dv_dark_v5", String(darkMode));
     }, [darkMode]);
 
     const adaugaJurnal = (mesaj) => {
@@ -248,7 +251,7 @@ export default function App() {
         return () => clearInterval(timer);
     }, []);
 
-    // 1. Simulator Roborock: Deplasare cursivă și rotire dinamică LiDAR
+    // 1. Simulator Roborock: Deplasare cursivă și rotire dinamică LiDAR în timpul curățeniei
     useEffect(() => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac || !vac.inCuratare || !vac.online) return;
@@ -261,7 +264,6 @@ export default function App() {
                         const prevPoint = VACUUM_WAYPOINTS[d.pasTraseu];
                         const nextPoint = VACUUM_WAYPOINTS[nextPas];
 
-                        // Orientare unghi spre următorul punct
                         const dx = nextPoint.x - prevPoint.x;
                         const dy = nextPoint.y - prevPoint.y;
                         const unghiTinta = Math.atan2(dy, dx) * (180 / Math.PI);
@@ -276,6 +278,9 @@ export default function App() {
                         return {
                             ...d,
                             pasTraseu: nextPas,
+                            pozitieCustom: null,
+                            pozitieOprire: null,
+                            traseuSalvat: null,
                             unghi: unghiNou,
                             durataSecunde: d.durataSecunde + 1,
                             suprafataCuratata: Number((d.suprafataCuratata + 0.08).toFixed(1)),
@@ -293,52 +298,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, [devices]);
 
-    // 2. Simulator Roborock: Revenire cursivă pe traseu la Dock
-    useEffect(() => {
-        const vac = devices.find((d) => d.id === 1);
-        if (!vac || !vac.seIntoarceLaDock || !vac.online) return;
-
-        const interval = setInterval(() => {
-            setDevices((prev) =>
-                prev.map((d) => {
-                    if (d.id === 1 && d.seIntoarceLaDock) {
-                        if (d.pasTraseu === 0) {
-                            adaugaJurnal("Roborock: A sosit la Dock și a început încărcarea.");
-                            return {
-                                ...d,
-                                seIntoarceLaDock: false,
-                                laDock: true,
-                                unghi: -90,
-                                stare: "Andocat la încărcare",
-                            };
-                        }
-                        const pasNou = d.pasTraseu > 0 ? (d.pasTraseu + 1) % VACUUM_WAYPOINTS.length : 0;
-                        const prevPoint = VACUUM_WAYPOINTS[d.pasTraseu];
-                        const nextPoint = VACUUM_WAYPOINTS[pasNou];
-
-                        const dx = nextPoint.x - prevPoint.x;
-                        const dy = nextPoint.y - prevPoint.y;
-                        const unghiTinta = Math.atan2(dy, dx) * (180 / Math.PI);
-                        const unghiCurent = d.unghi ?? -90;
-                        const dif = ((unghiTinta - (unghiCurent % 360) + 540) % 360) - 180;
-                        const unghiNou = unghiCurent + dif;
-
-                        return {
-                            ...d,
-                            pasTraseu: pasNou,
-                            unghi: unghiNou,
-                            stare: "Revenire pe traseu la stația de încărcare...",
-                        };
-                    }
-                    return d;
-                })
-            );
-        }, 1200);
-
-        return () => clearInterval(interval);
-    }, [devices]);
-
-    // 3. Simulator Roborock: Încărcare dinamică la Dock până la 100%
+    // 2. Simulator Roborock: Încărcare dinamică la Dock până la 100%
     useEffect(() => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac || !vac.laDock || vac.baterie >= 100 || !vac.online || vac.inCuratare) return;
@@ -365,7 +325,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, [devices]);
 
-    // 4. Simulator preparare cafea Jura E8
+    // 3. Simulator preparare cafea Jura E8
     useEffect(() => {
         const coffee = devices.find((d) => d.id === 4);
         if (!coffee || !coffee.inPreparare || !coffee.online) return;
@@ -446,6 +406,7 @@ export default function App() {
         if (logText) adaugaJurnal(logText);
     };
 
+    // OPREȘTE INSTANTANEU CURĂȚENIA ȘI MERGE DIRECT LA DOCK
     const handleSendToDock = () => {
         const vac = devices.find((d) => d.id === 1);
         if (!vac) return;
@@ -455,16 +416,69 @@ export default function App() {
             return;
         }
 
+        const currentPos = vac.pozitieCustom || VACUUM_WAYPOINTS[vac.pasTraseu || 0];
+        const dockPos = VACUUM_WAYPOINTS[0]; // { x: 49, y: 160 }
+
+        // Calculăm unghiul direct spre Dock
+        const dx = dockPos.x - currentPos.x;
+        const dy = dockPos.y - currentPos.y;
+        const unghiTinta = Math.atan2(dy, dx) * (180 / Math.PI);
+        const unghiCurent = vac.unghi ?? -90;
+        const dif = ((unghiTinta - (unghiCurent % 360) + 540) % 360) - 180;
+        const unghiOrientare = unghiCurent + dif;
+
+        // Salvăm traseul parcurs până acum pentru a rămâne desenat pe hartă
+        const punctePanaAcum = VACUUM_WAYPOINTS.slice(0, (vac.pasTraseu || 0) + 1);
+        const trailSaved = punctePanaAcum.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" ");
+
+        // Pas 1: Oprește curățenia imediat, îngheață poziția și se rotește spre Dock
         updateDevice(
             1,
             {
                 inCuratare: false,
                 seIntoarceLaDock: true,
-                stare: "Se întoarce la stația de încărcare (Dock)...",
+                laDock: false,
+                pozitieCustom: currentPos,
+                pozitieOprire: currentPos,
+                traseuSalvat: trailSaved,
+                unghi: unghiOrientare,
+                stare: "Revenire directă la stația de încărcare...",
             },
-            "Roborock: Revenire inițiată de unde a rămas pe traseu."
+            "Roborock: Curățenie oprită. Revenire directă la Dock."
         );
-        afiseazaNotificare("Roborock se întoarce spre dock pe traseu...");
+        afiseazaNotificare("Curățenie oprită. Roborock se întoarce direct la Dock!");
+
+        // Pas 2: După 350ms (rotire), glisează direct în linie dreaptă spre Dock
+        setTimeout(() => {
+            setDevices((prev) =>
+                prev.map((d) =>
+                    d.id === 1 && d.seIntoarceLaDock
+                        ? { ...d, pozitieCustom: dockPos }
+                        : d
+                )
+            );
+        }, 350);
+
+        // Pas 3: Când a atins Dock-ul (după 2.4s de mers lin)
+        setTimeout(() => {
+            setDevices((prev) =>
+                prev.map((d) =>
+                    d.id === 1 && d.seIntoarceLaDock
+                        ? {
+                            ...d,
+                            seIntoarceLaDock: false,
+                            laDock: true,
+                            pasTraseu: 0,
+                            pozitieCustom: null,
+                            pozitieOprire: null,
+                            unghi: -90,
+                            stare: "Andocat la încărcare",
+                        }
+                        : d
+                )
+            );
+            adaugaJurnal("Roborock: A sosit la Dock și a început încărcarea.");
+        }, 2450);
     };
 
     const handleChangeMediaSource = (id, srcKey) => {
@@ -514,12 +528,11 @@ export default function App() {
             setDevices((prev) =>
                 prev.map((d) => {
                     if (d.id === 2 || d.id === 4) return { ...d, online: false, redare: false, inPreparare: false };
-                    if (d.id === 1)
-                        return { ...d, inCuratare: false, seIntoarceLaDock: true, modCuratare: "Silent" };
                     return d;
                 })
             );
-            afiseazaNotificare("Rutina „Noapte Bună”: Roborock revine la Dock în mod Silent.");
+            handleSendToDock();
+            afiseazaNotificare("Rutina „Noapte Bună”: Roborock revine direct la Dock în mod Silent.");
         } else if (id === "movie") {
             const plexMeta = MEDIA_SOURCES["Plex 4K"];
             setDevices((prev) =>
@@ -537,16 +550,26 @@ export default function App() {
                             codec: plexMeta.codec,
                             themeClass: plexMeta.themeClass,
                         };
-                    if (d.id === 1) return { ...d, inCuratare: false, seIntoarceLaDock: true };
                     return d;
                 })
             );
-            afiseazaNotificare("Rutina „Seară de Film”: Plex 4K pornit, aspiratorul andochează.");
+            handleSendToDock();
+            afiseazaNotificare("Rutina „Seară de Film”: Plex 4K pornit, aspiratorul revine la dock.");
         } else if (id === "away") {
             setDevices((prev) =>
                 prev.map((d) => {
                     if (d.id === 1)
-                        return { ...d, online: true, inCuratare: true, laDock: false, seIntoarceLaDock: false, modCuratare: "Turbo" };
+                        return {
+                            ...d,
+                            online: true,
+                            inCuratare: true,
+                            laDock: false,
+                            seIntoarceLaDock: false,
+                            pozitieCustom: null,
+                            pozitieOprire: null,
+                            traseuSalvat: null,
+                            modCuratare: "Turbo",
+                        };
                     if (d.id === 2 || d.id === 4) return { ...d, online: false };
                     return d;
                 })
@@ -556,8 +579,8 @@ export default function App() {
     };
 
     const handleResetFactory = () => {
-        localStorage.removeItem("dv_devices_v4");
-        localStorage.removeItem("dv_routines_v4");
+        localStorage.removeItem("dv_devices_v5");
+        localStorage.removeItem("dv_routines_v5");
         setDevices(initialDevices);
         setRoutines(initialRoutines);
         afiseazaNotificare("Toate datele au fost resetate la valorile din fabrică.");
@@ -585,7 +608,7 @@ export default function App() {
         return acc + 1;
     }, 0);
 
-    const robotPos = VACUUM_WAYPOINTS[activeDevice.pasTraseu || 0];
+    const robotPos = activeDevice.pozitieCustom || VACUUM_WAYPOINTS[activeDevice.pasTraseu || 0];
     const dockPos = VACUUM_WAYPOINTS[0];
     const trailSlice = VACUUM_WAYPOINTS.slice(0, (activeDevice.pasTraseu || 0) + 1);
     const trailSvgPath = trailSlice.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" ");
@@ -684,7 +707,7 @@ export default function App() {
                             </div>
                         </header>
 
-                        {/* === TAB 1: OVERVIEW HOME === */}
+                        {/* TAB 1: OVERVIEW HOME */}
                         {activeTab === "home" && (
                             <section className="overview-stage">
                                 <div className="home-summary-banner">
@@ -786,7 +809,7 @@ export default function App() {
                             </section>
                         )}
 
-                        {/* === TAB 2: VEDERE RUTINE === */}
+                        {/* TAB 2: RUTINE */}
                         {activeTab === "rutine" && (
                             <section className="routines-view">
                                 <div className="routines-grid">
@@ -831,7 +854,7 @@ export default function App() {
                             </section>
                         )}
 
-                        {/* === TAB 3: VEDERE CAMERĂ FOCALIZATĂ === */}
+                        {/* TAB 3: CAMERĂ FOCALIZATĂ */}
                         {activeTab === "room" && (
                             <div className="hub-workspace">
                                 <section className="hub-center-stage">
@@ -900,7 +923,7 @@ export default function App() {
                                   <span className={`map-live-dot ${activeDevice.inCuratare ? "pulse" : (activeDevice.seIntoarceLaDock ? "return-pulse" : "")}`}></span>
                                     {activeDevice.inCuratare
                                         ? (activeDevice.mopActiv ? "ASPIRARE + SPĂLARE MOP ACTIVĂ" : "ASPIRARE USCATĂ ÎN CURS")
-                                        : (activeDevice.seIntoarceLaDock ? "REVENIRE LA DOCK ÎN CURS" : "ROBOT LA DOCK • ANDOCAT")}
+                                        : (activeDevice.seIntoarceLaDock ? "REVENIRE DIRECTĂ LA DOCK" : "ROBOT LA DOCK • ANDOCAT")}
                                 </span>
                                                                 <span className="map-room-title">Living • {activeDevice.stare}</span>
                                                             </div>
@@ -948,9 +971,10 @@ export default function App() {
                                                                     <text x="28" y="183" className="dock-text">DOCK</text>
                                                                 </g>
 
-                                                                {activeDevice.pasTraseu > 0 && (
+                                                                {/* Dâra curățată păstrată pe ecran */}
+                                                                {(activeDevice.traseuSalvat || activeDevice.pasTraseu > 0) && (
                                                                     <path
-                                                                        d={trailSvgPath}
+                                                                        d={activeDevice.traseuSalvat || trailSvgPath}
                                                                         fill="none"
                                                                         stroke={activeDevice.mopActiv ? "url(#mopTrailGrad)" : "url(#dryTrailGrad)"}
                                                                         strokeWidth={activeDevice.mopActiv ? "7" : "5"}
@@ -959,10 +983,11 @@ export default function App() {
                                                                     />
                                                                 )}
 
-                                                                {activeDevice.seIntoarceLaDock && (
+                                                                {/* Linia directă punctată animată spre Dock */}
+                                                                {activeDevice.seIntoarceLaDock && activeDevice.pozitieOprire && (
                                                                     <line
-                                                                        x1={robotPos.x}
-                                                                        y1={robotPos.y}
+                                                                        x1={activeDevice.pozitieOprire.x}
+                                                                        y1={activeDevice.pozitieOprire.y}
                                                                         x2={dockPos.x}
                                                                         y2={dockPos.y}
                                                                         stroke="#f59e0b"
@@ -972,12 +997,12 @@ export default function App() {
                                                                     />
                                                                 )}
 
-                                                                {/* Robot cu mișcare lină și orientare după direcția de deplasare */}
+                                                                {/* Robotul deplasat lin (linear la curățenie, direct ease-in-out spre dock) */}
                                                                 <g
                                                                     className="vacuum-bot-unit"
                                                                     style={{
                                                                         transform: `translate(${robotPos.x}px, ${robotPos.y}px) rotate(${activeDevice.unghi ?? -90}deg)`,
-                                                                        transition: "transform 1.2s linear",
+                                                                        transition: activeDevice.seIntoarceLaDock ? "transform 2.1s ease-in-out" : "transform 1.2s linear",
                                                                         transformOrigin: "0px 0px",
                                                                     }}
                                                                 >
@@ -1007,7 +1032,7 @@ export default function App() {
                                 </span>
                                                                 {activeDevice.seIntoarceLaDock && (
                                                                     <span className="legend-chip">
-                                    <span className="legend-color color-return"></span> Traseu Întoarcere
+                                    <span className="legend-color color-return"></span> Traseu Direct Întoarcere
                                   </span>
                                                                 )}
                                                             </div>
@@ -1089,6 +1114,9 @@ export default function App() {
                                                                                 inCuratare: !activeDevice.inCuratare,
                                                                                 seIntoarceLaDock: false,
                                                                                 laDock: false,
+                                                                                pozitieCustom: null,
+                                                                                pozitieOprire: null,
+                                                                                traseuSalvat: null,
                                                                                 stare: !activeDevice.inCuratare
                                                                                     ? (activeDevice.mopActiv ? "Aspirare + Mop în curs..." : "Aspirare în desfășurare...")
                                                                                     : "În pauză pe traseu",
@@ -1103,7 +1131,7 @@ export default function App() {
                                                                     className={`action-btn secondary ${activeDevice.seIntoarceLaDock ? "active" : ""}`}
                                                                     onClick={handleSendToDock}
                                                                 >
-                                                                    🏠 {activeDevice.seIntoarceLaDock ? "Revenire în curs..." : "Trimite la Dock"}
+                                                                    🏠 {activeDevice.seIntoarceLaDock ? "Revenire directă..." : "Trimite la Dock"}
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -1131,7 +1159,7 @@ export default function App() {
                                                     </div>
                                                 )}
 
-                                                {/* GOOGLE TV STREAMER */}
+                                                {/* GOOGLE TV */}
                                                 {activeDevice.tip === "media" && (
                                                     <div className="control-section">
                                                         <div className={`media-playback-card ${activeDevice.themeClass || "theme-plex"}`}>
@@ -1230,7 +1258,7 @@ export default function App() {
                                                     </div>
                                                 )}
 
-                                                {/* AQARA CLIMATE SENSOR */}
+                                                {/* AQARA SENSOR */}
                                                 {activeDevice.tip === "climate" && (
                                                     <div className="control-section">
                                                         <div className="climate-display-cards">
@@ -1265,7 +1293,7 @@ export default function App() {
                                                     </div>
                                                 )}
 
-                                                {/* JURA E8 SMART ESPRESSO */}
+                                                {/* JURA ESPRESSO */}
                                                 {activeDevice.tip === "coffee" && (
                                                     <div className="control-section">
                                                         <div className="metrics-row">
