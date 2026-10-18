@@ -31,6 +31,8 @@ const MEDIA_SOURCES = {
         progresInitial: 2535,
         isGaming: false,
         themeClass: "theme-plex",
+        glowColor: "rgba(2, 132, 199, 0.45)",
+        glowShadow: "0 0 50px rgba(2, 132, 199, 0.4), 0 0 100px rgba(56, 189, 248, 0.2)",
     },
     YouTube: {
         sursa: "YouTube Smart TV App",
@@ -41,6 +43,8 @@ const MEDIA_SOURCES = {
         progresInitial: 410,
         isGaming: false,
         themeClass: "theme-youtube",
+        glowColor: "rgba(220, 38, 38, 0.45)",
+        glowShadow: "0 0 50px rgba(220, 38, 38, 0.4), 0 0 100px rgba(239, 68, 68, 0.2)",
     },
     "Apple TV": {
         sursa: "Apple TV+ Original Stream",
@@ -51,16 +55,20 @@ const MEDIA_SOURCES = {
         progresInitial: 1290,
         isGaming: false,
         themeClass: "theme-apple",
+        glowColor: "rgba(148, 163, 184, 0.35)",
+        glowShadow: "0 0 50px rgba(148, 163, 184, 0.35), 0 0 100px rgba(203, 213, 225, 0.15)",
     },
     "HDMI 2": {
         sursa: "HDMI 2.1 eARC ( Gaming Input )",
         badge: "HDMI 2.1 VRR",
         titluMedia: "The Witcher 3: Wild Hunt • Next-Gen",
         codec: "RGB 10-Bit • 4K @ 120Hz G-Sync / VRR",
-        durataTotala: 0, // Nelimitat
-        progresInitial: 145, // 2m 25s
+        durataTotala: 0,
+        progresInitial: 145,
         isGaming: true,
         themeClass: "theme-hdmi",
+        glowColor: "rgba(99, 102, 241, 0.5)",
+        glowShadow: "0 0 60px rgba(99, 102, 241, 0.55), 0 0 120px rgba(168, 85, 247, 0.3)",
     },
 };
 
@@ -86,6 +94,8 @@ const initialDevices = [
         mopActiv: true,
         debitApa: "Mediu",
         nivelApaMop: 88,
+        nivelPraf: 32,
+        autoGolireActiva: false,
         suprafataCuratata: 42,
         durataSecunde: 2280,
         consumWatts: 55,
@@ -105,6 +115,8 @@ const initialDevices = [
         titluMedia: "Interstellar (2014) • Remux 4K",
         codec: "HEVC Main 10 • Dolby Atmos 7.1",
         themeClass: "theme-plex",
+        glowColor: "rgba(2, 132, 199, 0.45)",
+        glowShadow: "0 0 50px rgba(2, 132, 199, 0.4), 0 0 100px rgba(56, 189, 248, 0.2)",
         progresSecunde: 2535,
         durataTotalaSecunde: 10140,
         isGaming: false,
@@ -194,22 +206,22 @@ const initialRoutines = [
 
 export default function App() {
     const [devices, setDevices] = useState(() => {
-        const saved = localStorage.getItem("dv_devices_v7");
+        const saved = localStorage.getItem("dv_devices_v9");
         return saved ? JSON.parse(saved) : initialDevices;
     });
 
     const [routines, setRoutines] = useState(() => {
-        const saved = localStorage.getItem("dv_routines_v7");
+        const saved = localStorage.getItem("dv_routines_v9");
         return saved ? JSON.parse(saved) : initialRoutines;
     });
 
     const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem("dv_dark_v7") === "true";
+        return localStorage.getItem("dv_dark_v9") === "true";
     });
 
     const [activeTab, setActiveTab] = useState("room");
-    const [selectedId, setSelectedId] = useState(4); // Focus pe Jura la prima vizualizare
-    const [cameraSelectata, setCameraSelectata] = useState("Bucătărie");
+    const [selectedId, setSelectedId] = useState(2); // Focus pe Google TV pentru testare imediată Ambilight
+    const [cameraSelectata, setCameraSelectata] = useState("Dormitor");
     const [oraCurenta, setOraCurenta] = useState("");
     const [dataCurenta, setDataCurenta] = useState("");
     const [notificare, setNotificare] = useState(null);
@@ -218,20 +230,20 @@ export default function App() {
 
     const [activityLog, setActivityLog] = useState([
         { timp: "12:00:10", text: "DeviceVault Hub inițializat (4 noduri active)." },
-        { timp: "12:05:22", text: "Jura E8 Smart Espresso: P.E.P. Ready & Clătire efectuată." },
-        { timp: "12:12:45", text: "Aqara Sensor: Telemetrie Zigbee sincronizată." },
+        { timp: "12:05:22", text: "Ambilight Engine: Profil dinamic sincronizat cu Google TV." },
+        { timp: "12:12:45", text: "Dynamic Island: Subsistem de fundal armat și activ." },
     ]);
 
     useEffect(() => {
-        localStorage.setItem("dv_devices_v7", JSON.stringify(devices));
+        localStorage.setItem("dv_devices_v9", JSON.stringify(devices));
     }, [devices]);
 
     useEffect(() => {
-        localStorage.setItem("dv_routines_v7", JSON.stringify(routines));
+        localStorage.setItem("dv_routines_v9", JSON.stringify(routines));
     }, [routines]);
 
     useEffect(() => {
-        localStorage.setItem("dv_dark_v7", String(darkMode));
+        localStorage.setItem("dv_dark_v9", String(darkMode));
     }, [darkMode]);
 
     const adaugaJurnal = (mesaj) => {
@@ -255,15 +267,17 @@ export default function App() {
         return () => clearInterval(timer);
     }, []);
 
-    /// Extragem stările booleene pentru a decupla timerele
+    // Stări izolate pentru cronometre independente
     const vac = devices.find((d) => d.id === 1);
     const isVacCleaning = Boolean(vac?.online && vac?.inCuratare);
     const isVacCharging = Boolean(vac?.online && vac?.laDock && vac?.baterie < 100);
+    const isVacWaterFilling = Boolean(vac?.online && vac?.laDock && vac?.nivelApaMop < 100);
+    const isVacDustEmptying = Boolean(vac?.online && vac?.laDock && vac?.nivelPraf > 0);
 
     const tv = devices.find((d) => d.id === 2);
     const isTvPlaying = Boolean(tv?.online && tv?.redare);
 
-    // 1. Cronometru Google TV (rulează independent)
+    // 1. Cronometru Google TV (independent)
     useEffect(() => {
         if (!isTvPlaying) return;
 
@@ -289,7 +303,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, [isTvPlaying]);
 
-    // 2. Deplasare Roborock (nu mai este resetată de televizor)
+    // 2. Roborock: Deplasare + Consum Apă + Umplere Progresivă Recipient Praf
     useEffect(() => {
         if (!isVacCleaning) return;
 
@@ -297,6 +311,12 @@ export default function App() {
             setDevices((prev) =>
                 prev.map((d) => {
                     if (d.id === 1 && d.inCuratare && d.online) {
+                        if (d.nivelPraf >= 95) {
+                            afiseazaNotificare("⚠️ Recipient praf plin (95%)! Revenire automată la Dock.");
+                            handleSendToDock();
+                            return d;
+                        }
+
                         const nextPas = (d.pasTraseu + 1) % VACUUM_WAYPOINTS.length;
                         const prevPoint = VACUUM_WAYPOINTS[d.pasTraseu];
                         const nextPoint = VACUUM_WAYPOINTS[nextPas];
@@ -309,8 +329,9 @@ export default function App() {
                         const dif = ((unghiTinta - (unghiCurent % 360) + 540) % 360) - 180;
                         const unghiNou = unghiCurent + dif;
 
-                        const apaScazuta = d.mopActiv && d.durataSecunde % 20 === 0 ? Math.max(5, d.nivelApaMop - 1) : d.nivelApaMop;
-                        const batScazuta = d.durataSecunde % 18 === 0 ? Math.max(5, d.baterie - 1) : d.baterie;
+                        const apaScazuta = d.mopActiv && d.durataSecunde % 18 === 0 ? Math.max(0, d.nivelApaMop - 1) : d.nivelApaMop;
+                        const batScazuta = d.durataSecunde % 20 === 0 ? Math.max(5, d.baterie - 1) : d.baterie;
+                        const prafAdunat = d.durataSecunde % 10 === 0 ? Math.min(100, d.nivelPraf + 1) : d.nivelPraf;
 
                         return {
                             ...d,
@@ -323,6 +344,7 @@ export default function App() {
                             suprafataCuratata: Number((d.suprafataCuratata + 0.08).toFixed(1)),
                             baterie: batScazuta,
                             nivelApaMop: apaScazuta,
+                            nivelPraf: prafAdunat,
                             laDock: false,
                             stare: d.mopActiv ? "Aspirare + Mop în curs..." : "Aspirare în desfășurare...",
                         };
@@ -335,7 +357,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, [isVacCleaning]);
 
-    // 3. Încărcare dinamică la Dock
+    // 3. Roborock: Încărcare Baterie la Dock
     useEffect(() => {
         if (!isVacCharging) return;
 
@@ -344,13 +366,10 @@ export default function App() {
                 prev.map((d) => {
                     if (d.id === 1 && d.laDock && d.baterie < 100) {
                         const nouaBaterie = Math.min(100, d.baterie + 1);
-                        if (nouaBaterie === 100) {
-                            adaugaJurnal("Roborock: Baterie complet încărcată (100%).");
-                        }
                         return {
                             ...d,
                             baterie: nouaBaterie,
-                            stare: nouaBaterie === 100 ? "Andocat • Încărcare completă 100%" : `Andocat la încărcare (${nouaBaterie}%)`,
+                            stare: nouaBaterie === 100 ? "Andocat • Încărcat 100%" : `Andocat la încărcare (${nouaBaterie}%)`,
                         };
                     }
                     return d;
@@ -361,7 +380,58 @@ export default function App() {
         return () => clearInterval(interval);
     }, [isVacCharging]);
 
-    // 4. Simulator preparare cafea Jura E8
+    // 4. Roborock: Reumplere Progresivă Apă Mop
+    useEffect(() => {
+        if (!isVacWaterFilling) return;
+
+        const interval = setInterval(() => {
+            setDevices((prev) =>
+                prev.map((d) => {
+                    if (d.id === 1 && d.laDock && d.nivelApaMop < 100) {
+                        const apaNoua = Math.min(100, d.nivelApaMop + 3);
+                        if (apaNoua === 100) {
+                            adaugaJurnal("Roborock: Rezervor apă mop umplut complet (100%).");
+                        }
+                        return {
+                            ...d,
+                            nivelApaMop: apaNoua,
+                        };
+                    }
+                    return d;
+                })
+            );
+        }, 1200);
+
+        return () => clearInterval(interval);
+    }, [isVacWaterFilling]);
+
+    // 5. Roborock: Auto-Golire Recipient Praf
+    useEffect(() => {
+        if (!isVacDustEmptying) return;
+
+        const interval = setInterval(() => {
+            setDevices((prev) =>
+                prev.map((d) => {
+                    if (d.id === 1 && d.laDock && d.nivelPraf > 0) {
+                        const nouPraf = Math.max(0, d.nivelPraf - 8);
+                        if (nouPraf === 0) {
+                            adaugaJurnal("Roborock: Auto-golire finalizată (0% praf).");
+                        }
+                        return {
+                            ...d,
+                            nivelPraf: nouPraf,
+                            autoGolireActiva: nouPraf > 0,
+                        };
+                    }
+                    return d;
+                })
+            );
+        }, 800);
+
+        return () => clearInterval(interval);
+    }, [isVacDustEmptying]);
+
+    // 6. Simulator Jura E8 Espresso
     useEffect(() => {
         const coffee = devices.find((d) => d.id === 4);
         if (!coffee || !coffee.inPreparare || !coffee.online) return;
@@ -442,27 +512,26 @@ export default function App() {
         if (logText) adaugaJurnal(logText);
     };
 
-    // Oprește instantaneu curățenia și glisează direct la dock
     const handleSendToDock = () => {
-        const vac = devices.find((d) => d.id === 1);
-        if (!vac) return;
+        const vacDev = devices.find((d) => d.id === 1);
+        if (!vacDev) return;
 
-        if (vac.laDock) {
-            afiseazaNotificare("Roborock este deja andocat la stația de încărcare.");
+        if (vacDev.laDock) {
+            afiseazaNotificare("Roborock este deja andocat la stația Ultra Dock.");
             return;
         }
 
-        const currentPos = vac.pozitieCustom || VACUUM_WAYPOINTS[vac.pasTraseu || 0];
+        const currentPos = vacDev.pozitieCustom || VACUUM_WAYPOINTS[vacDev.pasTraseu || 0];
         const dockPos = VACUUM_WAYPOINTS[0];
 
         const dx = dockPos.x - currentPos.x;
         const dy = dockPos.y - currentPos.y;
         const unghiTinta = Math.atan2(dy, dx) * (180 / Math.PI);
-        const unghiCurent = vac.unghi ?? -90;
+        const unghiCurent = vacDev.unghi ?? -90;
         const dif = ((unghiTinta - (unghiCurent % 360) + 540) % 360) - 180;
         const unghiOrientare = unghiCurent + dif;
 
-        const punctePanaAcum = VACUUM_WAYPOINTS.slice(0, (vac.pasTraseu || 0) + 1);
+        const punctePanaAcum = VACUUM_WAYPOINTS.slice(0, (vacDev.pasTraseu || 0) + 1);
         const trailSaved = punctePanaAcum.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" ");
 
         updateDevice(
@@ -475,11 +544,11 @@ export default function App() {
                 pozitieOprire: currentPos,
                 traseuSalvat: trailSaved,
                 unghi: unghiOrientare,
-                stare: "Revenire directă la stația de încărcare...",
+                stare: "Revenire directă la stația de andocare...",
             },
             "Roborock: Curățenie oprită. Revenire directă la Dock."
         );
-        afiseazaNotificare("Curățenie oprită. Roborock se întoarce direct la Dock!");
+        afiseazaNotificare("Curățenie oprită. Roborock se întoarce la stație!");
 
         setTimeout(() => {
             setDevices((prev) =>
@@ -501,12 +570,12 @@ export default function App() {
                             pozitieCustom: null,
                             pozitieOprire: null,
                             unghi: -90,
-                            stare: "Andocat la încărcare",
+                            stare: "Andocat la încărcare & mentenanță",
                         }
                         : d
                 )
             );
-            adaugaJurnal("Roborock: A sosit la Dock și a început încărcarea.");
+            adaugaJurnal("Roborock: Andocat la Ultra Dock (Auto-golire & alimentare).");
         }, 2450);
     };
 
@@ -525,6 +594,8 @@ export default function App() {
                 progresSecunde: meta.progresInitial,
                 isGaming: meta.isGaming,
                 themeClass: meta.themeClass,
+                glowColor: meta.glowColor,
+                glowShadow: meta.glowShadow,
                 redare: true,
                 stare: meta.isGaming ? "Sesiune joc în desfășurare" : "Redare activă",
             },
@@ -580,6 +651,8 @@ export default function App() {
                             titluMedia: plexMeta.titluMedia,
                             codec: plexMeta.codec,
                             themeClass: plexMeta.themeClass,
+                            glowColor: plexMeta.glowColor,
+                            glowShadow: plexMeta.glowShadow,
                             durataTotalaSecunde: plexMeta.durataTotala,
                             progresSecunde: plexMeta.progresInitial,
                             isGaming: false,
@@ -588,7 +661,7 @@ export default function App() {
                 })
             );
             handleSendToDock();
-            afiseazaNotificare("Rutina „Seară de Film”: Plex 4K pornit, aspiratorul revine la dock.");
+            afiseazaNotificare("Rutina „Seară de Film”: Ambilight Plex 4K pornit.");
         } else if (id === "away") {
             setDevices((prev) =>
                 prev.map((d) => {
@@ -613,11 +686,11 @@ export default function App() {
     };
 
     const handleResetFactory = () => {
-        localStorage.removeItem("dv_devices_v7");
-        localStorage.removeItem("dv_routines_v7");
+        localStorage.removeItem("dv_devices_v9");
+        localStorage.removeItem("dv_routines_v9");
         setDevices(initialDevices);
         setRoutines(initialRoutines);
-        afiseazaNotificare("Toate datele au fost resetate la valorile din fabrică.");
+        afiseazaNotificare("Toate setările au fost readuse la valorile din fabrică.");
     };
 
     const formatSecunde = (totalSecunde) => {
@@ -647,8 +720,109 @@ export default function App() {
     const trailSlice = VACUUM_WAYPOINTS.slice(0, (activeDevice.pasTraseu || 0) + 1);
     const trailSvgPath = trailSlice.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" ");
 
+    // ==========================================================
+    // DETECTARE ACTIVITĂȚI FUNDAL PENTRU DYNAMIC ISLAND
+    // ==========================================================
+    const backgroundTasks = [];
+
+    const coffeeDev = devices.find((d) => d.id === 4);
+    if (coffeeDev?.online && coffeeDev?.inPreparare) {
+        backgroundTasks.push({
+            device: coffeeDev,
+            icon: "☕",
+            title: "Jura E8 Espresso",
+            sub: `Preparare ${coffeeDev.bauturaSelectata} (${coffeeDev.progresPreparare}%)`,
+            badge: "BREWING",
+            glow: "#f59e0b",
+            progress: coffeeDev.progresPreparare,
+        });
+    }
+
+    const vacDev = devices.find((d) => d.id === 1);
+    if (vacDev?.online && vacDev?.inCuratare) {
+        backgroundTasks.push({
+            device: vacDev,
+            icon: "🤖",
+            title: "Roborock Vacuum",
+            sub: `${vacDev.mopActiv ? "Mop + Aspirare" : "Aspirare"} (${vacDev.suprafataCuratata} m²)`,
+            badge: "CLEANING",
+            glow: "#10b981",
+            progress: null,
+        });
+    } else if (vacDev?.online && vacDev?.seIntoarceLaDock) {
+        backgroundTasks.push({
+            device: vacDev,
+            icon: "🏠",
+            title: "Roborock Vacuum",
+            sub: "Revenire directă la Ultra Dock",
+            badge: "RETURNING",
+            glow: "#f59e0b",
+            progress: null,
+        });
+    }
+
+    const tvDev = devices.find((d) => d.id === 2);
+    if (tvDev?.online && tvDev?.redare) {
+        backgroundTasks.push({
+            device: tvDev,
+            icon: tvDev.sursaKey === "HDMI 2" ? "🎮" : "📺",
+            title: tvDev.sursaKey === "HDMI 2" ? "HDMI 2 Gaming" : `${tvDev.sursaKey} 4K`,
+            sub: tvDev.sursaKey === "HDMI 2"
+                ? `Witcher 3 • ${formatSecunde(tvDev.progresSecunde)}`
+                : tvDev.titluMedia.slice(0, 24),
+            badge: tvDev.sursaKey === "HDMI 2" ? "VRR 120Hz" : "AMBILIGHT",
+            glow: tvDev.sursaKey === "HDMI 2" ? "#818cf8" : (tvDev.sursaKey === "YouTube" ? "#ef4444" : "#0284c7"),
+            progress: tvDev.isGaming ? null : (tvDev.durataTotalaSecunde > 0 ? (tvDev.progresSecunde / tvDev.durataTotalaSecunde) * 100 : null),
+        });
+    }
+
+    // Luăm task-ul prioritar care NU este ecranul curent activ
+    const islandActive = backgroundTasks.find((t) => !(activeTab === "room" && selectedId === t.device.id)) || (backgroundTasks.length > 0 ? backgroundTasks[0] : null);
+
+    const activeMediaDev = devices.find((d) => d.id === 2);
+    const isMediaAmbilightActive = Boolean(activeMediaDev?.online && activeMediaDev?.redare);
+
     return (
         <div className={`hub-viewport ${darkMode ? "dark-theme" : ""}`}>
+            {/* ==========================================================
+          DYNAMIC ISLAND INTELIGENT PLUTITOR (Apple Style)
+          ========================================================== */}
+            {islandActive && (
+                <aside
+                    aria-label="Notificări dispozitive active"
+                    className="dynamic-island-capsule"
+                    onClick={() => handleSelectDevice(islandActive.device)}
+                    style={{ "--island-glow": islandActive.glow }}
+                >
+                    <div className="island-leading">
+                        <span className="island-icon">{islandActive.icon}</span>
+                        <span className="island-pulse-dot" style={{ background: islandActive.glow }}></span>
+                    </div>
+
+                    <div className="island-center">
+                        <div className="island-title-row">
+                            <span className="island-device-name">{islandActive.title}</span>
+                            <span className="island-badge-pill" style={{ color: islandActive.glow, borderColor: islandActive.glow }}>
+                {islandActive.badge}
+              </span>
+                        </div>
+                        <span className="island-sub-text">{islandActive.sub}</span>
+                        {islandActive.progress !== null && (
+                            <div className="island-progress-track">
+                                <div
+                                    className="island-progress-fill"
+                                    style={{ width: `${islandActive.progress}%`, background: islandActive.glow }}
+                                ></div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="island-trailing">
+                        <span className="island-teleport-arrow">➔</span>
+                    </div>
+                </aside>
+            )}
+
             <div className="hub-device-frame">
                 <div className="hub-notch"></div>
 
@@ -741,7 +915,7 @@ export default function App() {
                             </div>
                         </header>
 
-                        {/* TAB 1: OVERVIEW HOME */}
+                        {/* TAB 1: ACASĂ OVERVIEW */}
                         {activeTab === "home" && (
                             <section className="overview-stage">
                                 <div className="home-summary-banner">
@@ -790,58 +964,62 @@ export default function App() {
                                 </div>
 
                                 <div className="overview-devices-grid">
-                                    {devices.map((dev) => (
-                                        <article
-                                            key={dev.id}
-                                            className={`overview-card ${!dev.online ? "is-offline" : ""}`}
-                                            onClick={() => handleSelectDevice(dev)}
-                                        >
-                                            <div className="ov-card-top">
-                                                <div className="ov-icon-box">{dev.icon}</div>
-                                                <button
-                                                    className={`power-switch-btn small ${dev.online ? "on" : "off"}`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        togglePower(dev.id);
-                                                    }}
-                                                >
-                                                    {dev.online ? "PORNIT" : "OPRIT"}
-                                                </button>
-                                            </div>
+                                    {devices.map((dev) => {
+                                        const isGoogleTvGlow = dev.id === 2 && dev.online && dev.redare;
+                                        return (
+                                            <article
+                                                key={dev.id}
+                                                className={`overview-card ${!dev.online ? "is-offline" : ""} ${isGoogleTvGlow ? "overview-ambilight-card" : ""}`}
+                                                style={isGoogleTvGlow ? { "--card-glow": dev.glowColor || "rgba(2, 132, 199, 0.4)" } : {}}
+                                                onClick={() => handleSelectDevice(dev)}
+                                            >
+                                                <div className="ov-card-top">
+                                                    <div className="ov-icon-box">{dev.icon}</div>
+                                                    <button
+                                                        className={`power-switch-btn small ${dev.online ? "on" : "off"}`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            togglePower(dev.id);
+                                                        }}
+                                                    >
+                                                        {dev.online ? "PORNIT" : "OPRIT"}
+                                                    </button>
+                                                </div>
 
-                                            <div className="ov-card-mid">
-                                                <h4>{dev.nume}</h4>
-                                                <span className="ov-room-tag">
-                          {dev.camera} &bull; {dev.protocol}
-                        </span>
-                                            </div>
+                                                <div className="ov-card-mid">
+                                                    <h4>{dev.nume}</h4>
+                                                    <span className="ov-room-tag">
+                            {dev.camera} &bull; {dev.protocol}
+                          </span>
+                                                </div>
 
-                                            <div className="ov-card-bottom">
-                        <span className="ov-live-info">
-                          {!dev.online ? (
-                              "În Standby (0.5W)"
-                          ) : (
-                              <>
-                                  {dev.tip === "vacuum" &&
-                                      (dev.inCuratare
-                                          ? `Aspiră (${dev.suprafataCuratata} m²)`
-                                          : `Baterie ${dev.baterie}% • Dock`)}
-                                  {dev.tip === "media" &&
-                                      (dev.sursaKey === "HDMI 2"
-                                          ? `Gaming: ${formatSecunde(dev.progresSecunde)}`
-                                          : `${dev.sursaKey}: ${dev.titluMedia.slice(0, 18)}...`)}
-                                  {dev.tip === "climate" && `${dev.temperatura}°C • Umiditate ${dev.umiditate}%`}
-                                  {dev.tip === "coffee" &&
-                                      (dev.inPreparare
-                                          ? `Prepară ${dev.bauturaSelectata}...`
-                                          : `Gata • ${dev.bauturaSelectata}`)}
-                              </>
-                          )}
-                        </span>
-                                                <span className="ov-open-link">Controlează ➔</span>
-                                            </div>
-                                        </article>
-                                    ))}
+                                                <div className="ov-card-bottom">
+                          <span className="ov-live-info">
+                            {!dev.online ? (
+                                "În Standby (0.5W)"
+                            ) : (
+                                <>
+                                    {dev.tip === "vacuum" &&
+                                        (dev.inCuratare
+                                            ? `Aspiră (${dev.suprafataCuratata} m² • Praf: ${dev.nivelPraf}%)`
+                                            : `Baterie ${dev.baterie}% • Ultra Dock`)}
+                                    {dev.tip === "media" &&
+                                        (dev.sursaKey === "HDMI 2"
+                                            ? `Gaming: ${formatSecunde(dev.progresSecunde)}`
+                                            : `${dev.sursaKey}: ${dev.titluMedia.slice(0, 18)}...`)}
+                                    {dev.tip === "climate" && `${dev.temperatura}°C • Umiditate ${dev.umiditate}%`}
+                                    {dev.tip === "coffee" &&
+                                        (dev.inPreparare
+                                            ? `Prepară ${dev.bauturaSelectata}...`
+                                            : `Gata • ${dev.bauturaSelectata}`)}
+                                </>
+                            )}
+                          </span>
+                                                    <span className="ov-open-link">Controlează ➔</span>
+                                                </div>
+                                            </article>
+                                        );
+                                    })}
                                 </div>
                             </section>
                         )}
@@ -895,7 +1073,16 @@ export default function App() {
                         {activeTab === "room" && (
                             <div className="hub-workspace">
                                 <section className="hub-center-stage">
-                                    <div className={`center-card card-${activeDevice.tip} ${!activeDevice.online ? "is-off" : ""}`}>
+                                    <div
+                                        className={`center-card card-${activeDevice.tip} ${!activeDevice.online ? "is-off" : ""} ${
+                                            activeDevice.tip === "media" && activeDevice.online && activeDevice.redare ? "ambilight-active-card" : ""
+                                        }`}
+                                        style={
+                                            activeDevice.tip === "media" && activeDevice.online && activeDevice.redare
+                                                ? { "--ambilight-halo": activeDevice.glowShadow }
+                                                : {}
+                                        }
+                                    >
                                         <div className="center-card-top">
                                             <div className="center-title-box">
                                                 <span className="center-icon">{activeDevice.icon}</span>
@@ -1062,7 +1249,7 @@ export default function App() {
                                     {activeDevice.mopActiv ? "Spălare Umedă Mop" : "Aspirare Uscată"}
                                 </span>
                                                                 <span className="legend-chip">
-                                  <span className="legend-color color-dock"></span> Stație Dock (Încărcare)
+                                  <span className="legend-color color-dock"></span> Stație Ultra Dock
                                 </span>
                                                                 {activeDevice.seIntoarceLaDock && (
                                                                     <span className="legend-chip">
@@ -1072,10 +1259,95 @@ export default function App() {
                                                             </div>
                                                         </div>
 
+                                                        <div className="ultra-dock-panel">
+                                                            <div className="dock-stat-box">
+                                                                <div className="dock-stat-title-row">
+                                                                    <span className="dock-icon">🗑️</span>
+                                                                    <div>
+                                                                        <h5>Recipient Praf (Auto-Empty Dock)</h5>
+                                                                        <span className="dock-sub-status">
+                                      {activeDevice.laDock && activeDevice.nivelPraf > 0
+                                          ? "💨 Auto-golire recipient mizerie în curs..."
+                                          : (activeDevice.nivelPraf >= 90 ? "⚠️ Plin! Necesită golire" : "Capacitate optimă de colectare")}
+                                    </span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="tank-progress-wrapper dust-wrapper">
+                                                                    <div
+                                                                        className={`tank-bar-fill ${activeDevice.nivelPraf > 80 ? "dust-high" : "dust-normal"}`}
+                                                                        style={{ width: `${activeDevice.nivelPraf}%` }}
+                                                                    ></div>
+                                                                </div>
+                                                                <div className="dock-action-row">
+                                  <span className="tank-label-text">
+                                    {activeDevice.nivelPraf}% plin {activeDevice.nivelPraf === 0 && "• Curat (0%)"}
+                                  </span>
+                                                                    {activeDevice.laDock && activeDevice.nivelPraf > 0 && (
+                                                                        <span className="emptying-pulse-badge">💨 Se golește...</span>
+                                                                    )}
+                                                                    {activeDevice.nivelPraf > 0 && (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="mini-dock-btn"
+                                                                            onClick={() => {
+                                                                                if (!activeDevice.laDock) {
+                                                                                    afiseazaNotificare("Trimit robotul la stație pentru auto-golirea prafului...");
+                                                                                    handleSendToDock();
+                                                                                } else {
+                                                                                    updateDevice(activeDevice.id, { nivelPraf: 0 }, "Roborock: Recipient de praf golit manual (0%).");
+                                                                                    afiseazaNotificare("Recipient de praf golit complet!");
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            {activeDevice.laDock ? "💨 Golește Acum" : "🏠 Du la Dock"}
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="dock-stat-box">
+                                                                <div className="dock-stat-title-row">
+                                                                    <span className="dock-icon">💧</span>
+                                                                    <div>
+                                                                        <h5>Rezervor Apă Curată Mop</h5>
+                                                                        <span className="dock-sub-status">
+                                      {activeDevice.laDock && activeDevice.nivelApaMop < 100
+                                          ? "💧 Alimentare automată de la stație..."
+                                          : "Alimentat cu apă dedurizată"}
+                                    </span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="tank-progress-wrapper water-wrapper">
+                                                                    <div
+                                                                        className="tank-bar-fill water-fill"
+                                                                        style={{ width: `${activeDevice.nivelApaMop}%` }}
+                                                                    ></div>
+                                                                </div>
+                                                                <div className="dock-action-row">
+                                  <span className="tank-label-text">
+                                    {activeDevice.nivelApaMop}% plin {activeDevice.nivelApaMop === 100 && "• Plin (100%)"}
+                                  </span>
+                                                                    {activeDevice.laDock && activeDevice.nivelApaMop < 100 && (
+                                                                        <span className="filling-pulse-badge">💧 Se reumple...</span>
+                                                                    )}
+                                                                    <button
+                                                                        type="button"
+                                                                        className="mini-dock-btn water-btn"
+                                                                        onClick={() => {
+                                                                            updateDevice(activeDevice.id, { nivelApaMop: 100 }, "Roborock: Rezervor apă mop reumplut complet.");
+                                                                            afiseazaNotificare("Roborock: Rezervor de apă umplut la 100%!");
+                                                                        }}
+                                                                    >
+                                                                        💧 Reumple Manual (100%)
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
                                                         <div className="mopping-control-panel">
                                                             <div className="mop-toggle-row">
                                                                 <div className="mop-title-wrap">
-                                                                    <span className="mop-icon">💧</span>
+                                                                    <span className="mop-icon">🌊</span>
                                                                     <div>
                                                                         <h5>Funcționalitate Mopping (Spălare Podele)</h5>
                                                                         <span className="mop-sub">Umezește laveta și spală parchetul activ</span>
@@ -1121,16 +1393,6 @@ export default function App() {
                                                                                 </button>
                                                                             ))}
                                                                         </div>
-                                                                    </div>
-
-                                                                    <div className="mop-tank-status">
-                                                                        <span className="group-title">Rezervor Apă Curată</span>
-                                                                        <div className="tank-progress-wrapper">
-                                                                            <div className="tank-bar-fill" style={{ width: `${activeDevice.nivelApaMop}%` }}></div>
-                                                                        </div>
-                                                                        <span className="tank-label-text">
-                                      {activeDevice.nivelApaMop}% plin &bull; Apă dedurizată OK
-                                    </span>
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -1194,12 +1456,25 @@ export default function App() {
                                                 )}
 
                                                 {/* ==============================================
-                            2. GOOGLE TV STREAMER (Streaming Video & Gaming)
+                            2. GOOGLE TV STREAMER (CU AMBILIGHT GLOW)
                             ============================================== */}
                                                 {activeDevice.tip === "media" && (
-                                                    <div className="control-section">
-                                                        <div className={`media-playback-card ${activeDevice.themeClass || "theme-plex"}`}>
-                                                            <div className="media-poster-badge">{activeDevice.badge || "PLEX 4K"}</div>
+                                                    <div className="control-section media-ambilight-wrapper">
+                                                        {/* HALO DE LUMINĂ AMBILIGHT VIRTUAL ÎN SPATE */}
+                                                        {activeDevice.online && activeDevice.redare && (
+                                                            <div
+                                                                className="ambilight-virtual-glow"
+                                                                style={{
+                                                                    background: activeDevice.glowColor || "rgba(2, 132, 199, 0.4)",
+                                                                }}
+                                                            ></div>
+                                                        )}
+
+                                                        <div className={`media-playback-card ${activeDevice.themeClass || "theme-plex"} ambilight-card-surface`}>
+                                                            <div className="media-poster-badge">
+                                                                <span className="ambilight-mini-dot"></span>
+                                                                {activeDevice.badge || "PLEX 4K"}
+                                                            </div>
                                                             <div className="media-details">
                                                                 <span className="media-source-tag">{activeDevice.sursa}</span>
                                                                 <h4 className="media-track-title">{activeDevice.titluMedia}</h4>
@@ -1246,7 +1521,6 @@ export default function App() {
                                                                             onClick={() =>
                                                                                 updateDevice(activeDevice.id, { progresSecunde: 0 }, "Google TV: Cronometru sesiune joc resetat la 00:00")
                                                                             }
-                                                                            title="Resetează cronometrul sesiunii"
                                                                         >
                                                                             ⏱️ Reset Sesiune
                                                                         </button>
@@ -1256,7 +1530,7 @@ export default function App() {
                                                                                 updateDevice(
                                                                                     activeDevice.id,
                                                                                     { redare: !activeDevice.redare },
-                                                                                    `Google TV: ${!activeDevice.redare ? "Joc reluat (cronometru pornit)" : "Joc pus în pauză"}`
+                                                                                    `Google TV: ${!activeDevice.redare ? "Joc reluat (Ambilight ON)" : "Joc pus în pauză"}`
                                                                                 )
                                                                             }
                                                                         >
@@ -1287,7 +1561,7 @@ export default function App() {
                                                                                 updateDevice(
                                                                                     activeDevice.id,
                                                                                     { redare: !activeDevice.redare },
-                                                                                    `Google TV: ${!activeDevice.redare ? "Redare pornită" : "Redare în pauză"}`
+                                                                                    `Google TV: ${!activeDevice.redare ? "Redare pornită (Ambilight ON)" : "Redare în pauză"}`
                                                                                 )
                                                                             }
                                                                         >
@@ -1341,7 +1615,7 @@ export default function App() {
                                                         </div>
 
                                                         <div className="control-group">
-                                                            <span className="group-title">Selectare Sursă Video & Conținut</span>
+                                                            <span className="group-title">Selectare Sursă Video & Ambilight Sincronizat</span>
                                                             <div className="mode-selector">
                                                                 {Object.keys(MEDIA_SOURCES).map((srcKey) => (
                                                                     <button
@@ -1358,7 +1632,7 @@ export default function App() {
                                                 )}
 
                                                 {/* ==============================================
-                            3. AQARA CLIMATE SENSOR (Grafic + Calibrare + Alertă)
+                            3. AQARA CLIMATE SENSOR
                             ============================================== */}
                                                 {activeDevice.tip === "climate" && (
                                                     <div className="control-section">
@@ -1375,7 +1649,6 @@ export default function App() {
                                                             </div>
                                                         </div>
 
-                                                        {/* GRAFIC SPARKLINE CU ISTORIC PE 12 ORE */}
                                                         <div className="sparkline-container">
                                                             <div className="sparkline-header">
                                                                 <span className="group-title">Istoric Temperatură (Ultimele 12 ore)</span>
@@ -1423,7 +1696,6 @@ export default function App() {
                                                             </div>
                                                         </div>
 
-                                                        {/* BUTOANE CALIBRARE ȘI ALERTĂ TERMICĂ */}
                                                         <div className="control-group">
                                                             <div className="button-cluster">
                                                                 <button
@@ -1462,7 +1734,7 @@ export default function App() {
                                                 )}
 
                                                 {/* ==============================================
-                            4. JURA E8 SMART ESPRESSO (Bucătărie)
+                            4. JURA E8 SMART ESPRESSO
                             ============================================== */}
                                                 {activeDevice.tip === "coffee" && (
                                                     <div className="control-section">
@@ -1525,7 +1797,6 @@ export default function App() {
                                                             </div>
                                                         </div>
 
-                                                        {/* SLIDER PENTRU INTENSITATEA BOABELOR ȘI VOLUM */}
                                                         <div className="control-group">
                               <span className="group-title">
                                 Intensitate Aromă ({activeDevice.intensitateBoabe} / 5 boabe) &bull; Volum: {activeDevice.volumApaMl} ml
@@ -1548,7 +1819,6 @@ export default function App() {
                                                             </div>
                                                         </div>
 
-                                                        {/* BUTON DE PREPARARE ȘI BUTON DE REUMPLERE APĂ & BOABE */}
                                                         <div className="button-cluster">
                                                             <button
                                                                 className={`action-btn primary ${activeDevice.inPreparare ? "active" : ""}`}
@@ -1652,19 +1922,19 @@ export default function App() {
                                 className="shortcut-pill clickable-pill"
                                 onClick={() =>
                                     setDiagnosticModal({
-                                        titlu: "Roborock Status & Mop Diagnostics",
+                                        titlu: "Roborock Ultra Dock Diagnostics",
                                         icon: "🤖",
                                         detalii: [
                                             { label: "Status Baterie", val: `${devices[0].baterie}% (${devices[0].laDock ? "La încărcător" : "Pe traseu"})` },
-                                            { label: "Mod Mopping", val: devices[0].mopActiv ? `Activ (${devices[0].debitApa})` : "Dezactivat" },
-                                            { label: "Nivel Rezervor Apă", val: `${devices[0].nivelApaMop}%` },
-                                            { label: "Filtru HEPA & Perii", val: "100% Curate" },
+                                            { label: "Nivel Recipient Praf", val: `${devices[0].nivelPraf}% (${devices[0].nivelPraf === 0 ? "Gol / Curat" : "Colectat"})` },
+                                            { label: "Nivel Rezervor Apă Mop", val: `${devices[0].nivelApaMop}% (${devices[0].debitApa})` },
+                                            { label: "Filtru HEPA & Perii", val: "100% Curate & Funcționale" },
                                         ],
                                     })
                                 }
                             >
-                                <span className="pill-icon">💧</span>
-                                <span>Mop: {devices[0].mopActiv ? `Activ (${devices[0].debitApa})` : "Oprit"} ℹ️</span>
+                                <span className="pill-icon">🧹</span>
+                                <span>Dock: Praf {devices[0].nivelPraf}% &bull; Apă {devices[0].nivelApaMop}% ℹ️</span>
                             </div>
 
                             <div className="shortcut-pill">
