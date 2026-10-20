@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
+import DeviceList from "./components/DeviceList.jsx";
 
 // Coordonate precise pe harta living-ului
 const VACUUM_WAYPOINTS = [
@@ -927,7 +928,7 @@ export default function App() {
                                     <div className="summary-stat">
                                         <span className="s-label">Climă Interior / Balcon</span>
                                         <span className="s-val">
-                      {devices.find((d) => d.id === 3)?.temperatura}°C &bull;{" "}
+                        {devices.find((d) => d.id === 3)?.temperatura}°C &bull;{" "}
                                             {devices.find((d) => d.id === 3)?.umiditate}%
                     </span>
                                         <span className="s-sub">Calitate aer optimă</span>
@@ -963,64 +964,12 @@ export default function App() {
                                     </div>
                                 </div>
 
-                                <div className="overview-devices-grid">
-                                    {devices.map((dev) => {
-                                        const isGoogleTvGlow = dev.id === 2 && dev.online && dev.redare;
-                                        return (
-                                            <article
-                                                key={dev.id}
-                                                className={`overview-card ${!dev.online ? "is-offline" : ""} ${isGoogleTvGlow ? "overview-ambilight-card" : ""}`}
-                                                style={isGoogleTvGlow ? { "--card-glow": dev.glowColor || "rgba(2, 132, 199, 0.4)" } : {}}
-                                                onClick={() => handleSelectDevice(dev)}
-                                            >
-                                                <div className="ov-card-top">
-                                                    <div className="ov-icon-box">{dev.icon}</div>
-                                                    <button
-                                                        className={`power-switch-btn small ${dev.online ? "on" : "off"}`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            togglePower(dev.id);
-                                                        }}
-                                                    >
-                                                        {dev.online ? "PORNIT" : "OPRIT"}
-                                                    </button>
-                                                </div>
-
-                                                <div className="ov-card-mid">
-                                                    <h4>{dev.nume}</h4>
-                                                    <span className="ov-room-tag">
-                            {dev.camera} &bull; {dev.protocol}
-                          </span>
-                                                </div>
-
-                                                <div className="ov-card-bottom">
-                          <span className="ov-live-info">
-                            {!dev.online ? (
-                                "În Standby (0.5W)"
-                            ) : (
-                                <>
-                                    {dev.tip === "vacuum" &&
-                                        (dev.inCuratare
-                                            ? `Aspiră (${dev.suprafataCuratata} m² • Praf: ${dev.nivelPraf}%)`
-                                            : `Baterie ${dev.baterie}% • Ultra Dock`)}
-                                    {dev.tip === "media" &&
-                                        (dev.sursaKey === "HDMI 2"
-                                            ? `Gaming: ${formatSecunde(dev.progresSecunde)}`
-                                            : `${dev.sursaKey}: ${dev.titluMedia.slice(0, 18)}...`)}
-                                    {dev.tip === "climate" && `${dev.temperatura}°C • Umiditate ${dev.umiditate}%`}
-                                    {dev.tip === "coffee" &&
-                                        (dev.inPreparare
-                                            ? `Prepară ${dev.bauturaSelectata}...`
-                                            : `Gata • ${dev.bauturaSelectata}`)}
-                                </>
-                            )}
-                          </span>
-                                                    <span className="ov-open-link">Controlează ➔</span>
-                                                </div>
-                                            </article>
-                                        );
-                                    })}
-                                </div>
+                                <DeviceList
+                                    devices={devices}
+                                    onSelectDevice={handleSelectDevice}
+                                    onTogglePower={togglePower}
+                                    formatSecunde={formatSecunde}
+                                />
                             </section>
                         )}
 
