@@ -1,10 +1,11 @@
 // frontend/src/components/DeviceCard.jsx
 // Componentă pentru un singur element din listă, primit prin props
 
+// frontend/src/components/DeviceCard.jsx
+// Componentă pentru un singur element din listă, primit prin props
+
 const ETICHETE_PROTOCOL = {
     "Wi-Fi": "Rețea Wi-Fi 5 GHz",
-    "Bluetooth": "Bluetooth 5.3 Low Latency",
-    "Zigbee": "Zigbee 3.0 Mesh",
 };
 
 export default function DeviceCard({ device, onSelectDevice, onTogglePower, formatSecunde }) {
@@ -36,8 +37,8 @@ export default function DeviceCard({ device, onSelectDevice, onTogglePower, form
             <div className="ov-card-mid">
                 <h4>{device.nume}</h4>
                 <span className="ov-room-tag">
-          {device.camera} &bull; {ETICHETE_PROTOCOL[device.protocol] || device.protocol}
-        </span>
+  {device.camera} &bull; {ETICHETE_PROTOCOL[device.protocol] || "Wi-Fi"}
+</span>
             </div>
 
             <div className="ov-card-bottom">
