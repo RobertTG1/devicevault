@@ -1,8 +1,5 @@
 // frontend/src/components/DeviceCard.jsx
-// Componentă pentru un singur element din listă, primit prin props
-
-// frontend/src/components/DeviceCard.jsx
-// Componentă pentru un singur element din listă, primit prin props
+import DeviceIcon from "./DeviceIcon.jsx";
 
 const ETICHETE_PROTOCOL = {
     "Wi-Fi": "Rețea Wi-Fi 5 GHz",
@@ -21,7 +18,9 @@ export default function DeviceCard({ device, onSelectDevice, onTogglePower, form
             onClick={() => onSelectDevice(device)}
         >
             <div className="ov-card-top">
-                <div className="ov-icon-box">{device.icon}</div>
+                <div className="ov-icon-box">
+                    <DeviceIcon type={device.tip} />
+                </div>
                 <button
                     type="button"
                     className={`power-switch-btn small ${isOnline ? "on" : "off"}`}
@@ -37,8 +36,8 @@ export default function DeviceCard({ device, onSelectDevice, onTogglePower, form
             <div className="ov-card-mid">
                 <h4>{device.nume}</h4>
                 <span className="ov-room-tag">
-  {device.camera} &bull; {ETICHETE_PROTOCOL[device.protocol] || "Wi-Fi"}
-</span>
+          {device.camera} &bull; {ETICHETE_PROTOCOL[device.protocol] || "Rețea Wi-Fi 5 GHz"}
+        </span>
             </div>
 
             <div className="ov-card-bottom">

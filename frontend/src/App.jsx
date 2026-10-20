@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import DeviceList from "./components/DeviceList.jsx";
+import DeviceIcon from "./components/DeviceIcon.jsx";
 
 // Coordonate precise pe harta living-ului
 const VACUUM_WAYPOINTS = [
@@ -796,7 +797,9 @@ export default function App() {
                     style={{ "--island-glow": islandActive.glow }}
                 >
                     <div className="island-leading">
-                        <span className="island-icon">{islandActive.icon}</span>
+                       <span className="island-icon">
+  <DeviceIcon type={islandActive.device.tip} />
+</span>
                         <span className="island-pulse-dot" style={{ background: islandActive.glow }}></span>
                     </div>
 
@@ -1034,7 +1037,9 @@ export default function App() {
                                     >
                                         <div className="center-card-top">
                                             <div className="center-title-box">
-                                                <span className="center-icon">{activeDevice.icon}</span>
+                                               <span className="center-icon">
+  <DeviceIcon type={activeDevice.tip} />
+</span>
                                                 <div>
                                                     <h3>{activeDevice.nume}</h3>
                                                     <span className="center-location">
@@ -1817,7 +1822,9 @@ export default function App() {
                                             >
                                                 <div className="side-card-header">
                                                     <div className="side-card-info">
-                                                        <span className="side-card-icon">{dev.icon}</span>
+                                                       <span className="side-card-icon">
+  <DeviceIcon type={dev.tip} />
+</span>
                                                         <div>
                                                             <h5>{dev.nume}</h5>
                                                             <span className="side-card-room">{dev.camera}</span>

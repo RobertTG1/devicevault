@@ -1699,3 +1699,34 @@ body {
 
   .hub-toast { left: 12px !important; right: 12px !important; top: 65px !important; text-align: center !important; }
 }
+
+/* ==========================================================
+   STIL PENTRU PICTOGRAME VECTORIALE PREMIUM
+   ========================================================== */
+.dev-custom-icon {
+  width: 28px;
+  height: 28px;
+  display: block;
+  transition: transform 0.25s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+}
+
+.overview-card:hover .dev-custom-icon,
+.side-card:hover .dev-custom-icon {
+  transform: scale(1.1);
+}
+
+.center-icon .dev-custom-icon {
+  width: 34px;
+  height: 34px;
+}
+
+.island-icon .dev-custom-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.side-card-icon .dev-custom-icon {
+  width: 22px;
+  height: 22px;
+}
