@@ -36,6 +36,18 @@ Plain JavaScript, no DOM. `dispozitive.js` holds the array of smart home devices
 ## Stage 3: Vite and React project
 The app now lives in `frontend/`, built with Vite. The data from Stage 2 moved into the main component; the list is rendered raw as JSON.
 
+## Stage 4: components
+The device dashboard list is rendered dynamically from data through two dedicated React components:
+- `DeviceList` receives the whole array through props, handles the empty list conditional state, and renders one card per item.
+- `DeviceCard` receives a single item through props and displays it.
+
+## Status
+- [x] Stage 1: HTML & CSS mockups
+- [x] Stage 2: JavaScript data structures & methods
+- [x] Stage 3: Vite and React project
+- [x] Stage 4: components rendered from data
+- [ ] Stage 5: local state and events
+- 
 ## Status
 - [x] Stage 1: static mockup
 - [x] Stage 2: data logic in JavaScript
@@ -78,3 +90,15 @@ The app now lives in `frontend/`, built with Vite. The data from Stage 2 moved i
 | S3-R5 | node_modules ignored, build passes | [frontend/.gitignore](frontend/.gitignore) | Run `npm run build` |
 | S3-R6 | README Stage 3 section + AI log | [README.md](README.md), [ai-log/etapa-03.md](ai-log/etapa-03.md) | Read documentation |
 | S3-R7 | Commit "Stage 3" pushed | [Commit history](https://github.com/RobertTG1/devicevault/commits/main) | Check commit history |
+
+
+### Stage 4 Checklist
+| ID | Requirement | Where | How to check |
+| :--- | :--- | :--- | :--- |
+| S4-R1 | 2+ components in src/components/ | frontend/src/components/ | Verify DeviceCard.jsx and DeviceList.jsx exist |
+| S4-R2 | card receives data through props | frontend/src/components/DeviceCard.jsx | Inspect component arguments ({ device }) |
+| S4-R3 | map + key={id}, no console warnings | frontend/src/components/DeviceList.jsx | Open F12 Console, no key warnings |
+| S4-R4 | message for empty list | frontend/src/components/DeviceList.jsx | Test with empty array [] |
+| S4-R5 | state changes the card look | frontend/src/components/DeviceCard.jsx | Toggle device online/offline power state |
+| S4-R6 | README Stage 4 section + AI log | README.md, ai-log/etapa-04.md | Read docs |
+| S4-R7 | commit "Stage 4" pushed | GitHub repository | Check git log |
