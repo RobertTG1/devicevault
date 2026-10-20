@@ -1,26 +1,26 @@
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import "./App.css";
 import DeviceList from "./components/DeviceList.jsx";
 import DeviceIcon from "./components/DeviceIcon.jsx";
 
 // Coordonate precise pe harta living-ului
 const VACUUM_WAYPOINTS = [
-    { x: 49, y: 160 }, // 0: Dock
-    { x: 49, y: 95 },  // 1: Ieșire dock spre stânga sus
-    { x: 115, y: 95 }, // 2
-    { x: 115, y: 55 }, // 3: Sub canapea
-    { x: 165, y: 55 }, // 4
-    { x: 165, y: 145 },// 5: Coborâre covor
-    { x: 210, y: 145 },// 6
-    { x: 210, y: 60 }, // 7: Urcare covor
-    { x: 255, y: 60 }, // 8
-    { x: 255, y: 145 },// 9: Coborâre covor
-    { x: 300, y: 145 },// 10
-    { x: 300, y: 60 }, // 11: Urcare lângă TV
-    { x: 345, y: 60 }, // 12
-    { x: 345, y: 140 },// 13: Ocolire ușă
-    { x: 130, y: 150 },// 14: Diagonală
-    { x: 49, y: 160 }, // 15: Dock
+    {x: 49, y: 160}, // 0: Dock
+    {x: 49, y: 95},  // 1: Ieșire dock spre stânga sus
+    {x: 115, y: 95}, // 2
+    {x: 115, y: 55}, // 3: Sub canapea
+    {x: 165, y: 55}, // 4
+    {x: 165, y: 145},// 5: Coborâre covor
+    {x: 210, y: 145},// 6
+    {x: 210, y: 60}, // 7: Urcare covor
+    {x: 255, y: 60}, // 8
+    {x: 255, y: 145},// 9: Coborâre covor
+    {x: 300, y: 145},// 10
+    {x: 300, y: 60}, // 11: Urcare lângă TV
+    {x: 345, y: 60}, // 12
+    {x: 345, y: 140},// 13: Ocolire ușă
+    {x: 130, y: 150},// 14: Diagonală
+    {x: 49, y: 160}, // 15: Dock
 ];
 
 const MEDIA_SOURCES = {
@@ -207,38 +207,38 @@ const initialRoutines = [
 
 // Funcție unică de calcul a consumului instantaneu per echipament
 const getConsumDispozitiv = (d) => {
-    if (!d.online) return { w: 0.5, desc: "0.5 W (Standby pasiv)" };
+    if (!d.online) return {w: 0.5, desc: "0.5 W (Standby pasiv)"};
 
     if (d.tip === "vacuum") {
-        if (d.inCuratare) return { w: 55, desc: "55 W (Motor aspirare + Mop activ)" };
-        if (d.laDock) return { w: 15, desc: "15 W (Încărcare la Dock)" };
-        return { w: 4, desc: "4 W (Standby Ultra Dock)" };
+        if (d.inCuratare) return {w: 55, desc: "55 W (Motor aspirare + Mop activ)"};
+        if (d.laDock) return {w: 15, desc: "15 W (Încărcare la Dock)"};
+        return {w: 4, desc: "4 W (Standby Ultra Dock)"};
     }
 
     if (d.tip === "media") {
         if (d.redare) {
             return d.sursaKey === "HDMI 2"
-                ? { w: 18, desc: "18 W (Sesiune Gaming VRR)" }
-                : { w: 18, desc: "18 W (Decodare 4K HDR)" };
+                ? {w: 18, desc: "18 W (Sesiune Gaming VRR)"}
+                : {w: 18, desc: "18 W (Decodare 4K HDR)"};
         }
-        return { w: 5, desc: "5 W (Standby ecran)" };
+        return {w: 5, desc: "5 W (Standby ecran)"};
     }
 
     if (d.tip === "climate") {
         if (d.incalzireActiva) {
-            return { w: 95, desc: "95 W (Centrală: Pompă recirculare & arzător)" };
+            return {w: 95, desc: "95 W (Centrală: Pompă recirculare & arzător)"};
         }
-        return { w: 2, desc: "2 W (Standby termostat & placă electronică)" };
+        return {w: 2, desc: "2 W (Standby termostat & placă electronică)"};
     }
 
     if (d.tip === "coffee") {
         if (d.inPreparare) {
-            return { w: 1450, desc: "1450 W (Termobloc & pompă P.E.P.)" };
+            return {w: 1450, desc: "1450 W (Termobloc & pompă P.E.P.)"};
         }
-        return { w: 12, desc: "12 W (Menținere temperatură)" };
+        return {w: 12, desc: "12 W (Menținere temperatură)"};
     }
 
-    return { w: 1, desc: "1 W (Nod IoT)" };
+    return {w: 1, desc: "1 W (Nod IoT)"};
 };
 
 export default function App() {
@@ -266,9 +266,9 @@ export default function App() {
     const [showLogModal, setShowLogModal] = useState(false);
 
     const [activityLog, setActivityLog] = useState([
-        { timp: "12:00:10", text: "DeviceVault Hub inițializat (4 noduri active)." },
-        { timp: "12:05:22", text: "Ambilight Engine: Profil dinamic sincronizat cu Google TV." },
-        { timp: "12:12:45", text: "Dynamic Island: Subsistem de fundal armat și activ." },
+        {timp: "12:00:10", text: "DeviceVault Hub inițializat (4 noduri active)."},
+        {timp: "12:05:22", text: "Ambilight Engine: Profil dinamic sincronizat cu Google TV."},
+        {timp: "12:12:45", text: "Dynamic Island: Subsistem de fundal armat și activ."},
     ]);
 
     useEffect(() => {
@@ -289,14 +289,14 @@ export default function App() {
             minute: "2-digit",
             second: "2-digit",
         });
-        setActivityLog((prev) => [{ timp: acum, text: mesaj }, ...prev.slice(0, 19)]);
+        setActivityLog((prev) => [{timp: acum, text: mesaj}, ...prev.slice(0, 19)]);
     };
 
     useEffect(() => {
         const updateTime = () => {
             const now = new Date();
-            setOraCurenta(now.toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" }));
-            const optiuniData = { weekday: "long", day: "numeric", month: "long" };
+            setOraCurenta(now.toLocaleTimeString("ro-RO", {hour: "2-digit", minute: "2-digit"}));
+            const optiuniData = {weekday: "long", day: "numeric", month: "long"};
             setDataCurenta(now.toLocaleDateString("ro-RO", optiuniData));
         };
         updateTime();
@@ -378,7 +378,7 @@ export default function App() {
                     if (d.id === 2 && d.online && d.redare) {
                         const isGaming = d.sursaKey === "HDMI 2";
                         if (!isGaming && d.durataTotalaSecunde > 0 && d.progresSecunde >= d.durataTotalaSecunde) {
-                            return { ...d, redare: false, stare: "Redare finalizată" };
+                            return {...d, redare: false, stare: "Redare finalizată"};
                         }
                         return {
                             ...d,
@@ -590,7 +590,14 @@ export default function App() {
         setDevices((prev) =>
             prev.map((d) =>
                 d.id === id
-                    ? { ...d, online: !d.online, inCuratare: false, seIntoarceLaDock: false, inPreparare: false, redare: false }
+                    ? {
+                        ...d,
+                        online: !d.online,
+                        inCuratare: false,
+                        seIntoarceLaDock: false,
+                        inPreparare: false,
+                        redare: false
+                    }
                     : d
             )
         );
@@ -598,7 +605,7 @@ export default function App() {
 
     const updateDevice = (id, fields, logText = null) => {
         setDevices((prev) =>
-            prev.map((d) => (d.id === id ? { ...d, ...fields } : d))
+            prev.map((d) => (d.id === id ? {...d, ...fields} : d))
         );
         if (logText) adaugaJurnal(logText);
     };
@@ -644,7 +651,7 @@ export default function App() {
         setTimeout(() => {
             setDevices((prev) =>
                 prev.map((d) =>
-                    d.id === 1 && d.seIntoarceLaDock ? { ...d, pozitieCustom: dockPos } : d
+                    d.id === 1 && d.seIntoarceLaDock ? {...d, pozitieCustom: dockPos} : d
                 )
             );
         }, 350);
@@ -696,7 +703,7 @@ export default function App() {
 
     const toggleRoutineActive = (id) => {
         setRoutines((prev) =>
-            prev.map((r) => (r.id === id ? { ...r, activa: !r.activa } : r))
+            prev.map((r) => (r.id === id ? {...r, activa: !r.activa} : r))
         );
     };
 
@@ -720,7 +727,7 @@ export default function App() {
         } else if (id === "night") {
             setDevices((prev) =>
                 prev.map((d) => {
-                    if (d.id === 2 || d.id === 4) return { ...d, online: false, redare: false, inPreparare: false };
+                    if (d.id === 2 || d.id === 4) return {...d, online: false, redare: false, inPreparare: false};
                     return d;
                 })
             );
@@ -768,7 +775,7 @@ export default function App() {
                             traseuSalvat: null,
                             modCuratare: "Turbo",
                         };
-                    if (d.id === 2 || d.id === 4) return { ...d, online: false };
+                    if (d.id === 2 || d.id === 4) return {...d, online: false};
                     return d;
                 })
             );
@@ -879,19 +886,20 @@ export default function App() {
                     aria-label="Notificări dispozitive active"
                     className="dynamic-island-capsule"
                     onClick={() => handleSelectDevice(islandActive.device)}
-                    style={{ boxShadow: `0 0 25px ${islandActive.glowColor || "rgba(2, 132, 199, 0.4)"}` }}
+                    style={{boxShadow: `0 0 25px ${islandActive.glowColor || "rgba(2, 132, 199, 0.4)"}`}}
                 >
                     <div className="island-leading">
                        <span className="island-icon">
-  <DeviceIcon type={islandActive.device.tip} />
+  <DeviceIcon type={islandActive.device.tip}/>
 </span>
-                        <span className="island-pulse-dot" style={{ background: islandActive.glow }}></span>
+                        <span className="island-pulse-dot" style={{background: islandActive.glow}}></span>
                     </div>
 
                     <div className="island-center">
                         <div className="island-title-row">
                             <span className="island-device-name">{islandActive.title}</span>
-                            <span className="island-badge-pill" style={{ color: islandActive.glow, borderColor: islandActive.glow }}>
+                            <span className="island-badge-pill"
+                                  style={{color: islandActive.glow, borderColor: islandActive.glow}}>
                 {islandActive.badge}
               </span>
                         </div>
@@ -900,7 +908,7 @@ export default function App() {
                             <div className="island-progress-track">
                                 <div
                                     className="island-progress-fill"
-                                    style={{ width: `${islandActive.progress}%`, background: islandActive.glow }}
+                                    style={{width: `${islandActive.progress}%`, background: islandActive.glow}}
                                 ></div>
                             </div>
                         )}
@@ -947,7 +955,7 @@ export default function App() {
                                 ⚡ Rutine ({routines.filter((r) => r.activa).length})
                             </button>
 
-                            <hr className="nav-divider" />
+                            <hr className="nav-divider"/>
 
                             <span className="nav-heading">Camere</span>
                             {["Living", "Dormitor", "Bucătărie", "Balcon"].map((cam) => {
@@ -994,7 +1002,8 @@ export default function App() {
                                 <button type="button" className="header-pill-btn" onClick={() => setShowLogModal(true)}>
                                     📋 Jurnal ({activityLog.length})
                                 </button>
-                                <button type="button" className="header-pill-btn" onClick={() => setDarkMode(!darkMode)}>
+                                <button type="button" className="header-pill-btn"
+                                        onClick={() => setDarkMode(!darkMode)}>
                                     {darkMode ? "☀️ Zi" : "🌙 Nocturn"}
                                 </button>
                                 <div className="hub-status-pill">
@@ -1027,7 +1036,7 @@ export default function App() {
                                             <button
                                                 className="tiny-action-btn"
                                                 onClick={() => {
-                                                    setDevices((prev) => prev.map((d) => ({ ...d, online: true })));
+                                                    setDevices((prev) => prev.map((d) => ({...d, online: true})));
                                                     afiseazaNotificare("Toate dispozitivele au fost PORNITE.");
                                                 }}
                                             >
@@ -1040,7 +1049,13 @@ export default function App() {
                                                         prev.map((d) =>
                                                             d.tip === "climate"
                                                                 ? d
-                                                                : { ...d, online: false, inCuratare: false, inPreparare: false, redare: false }
+                                                                : {
+                                                                    ...d,
+                                                                    online: false,
+                                                                    inCuratare: false,
+                                                                    inPreparare: false,
+                                                                    redare: false
+                                                                }
                                                         )
                                                     );
                                                     afiseazaNotificare("Mod Eco activat: consumatorii mari au fost opriți.");
@@ -1096,7 +1111,8 @@ export default function App() {
                                             </div>
 
                                             <div className="routine-footer">
-                                                <button className="run-routine-btn" onClick={() => ruleazaRutina(routine.id)}>
+                                                <button className="run-routine-btn"
+                                                        onClick={() => ruleazaRutina(routine.id)}>
                                                     ▶ Rulează acum
                                                 </button>
                                             </div>
@@ -1116,14 +1132,14 @@ export default function App() {
                                         }`}
                                         style={
                                             activeDevice.tip === "media" && activeDevice.online && activeDevice.redare
-                                                ? { "--ambilight-halo": activeDevice.glowShadow }
+                                                ? {"--ambilight-halo": activeDevice.glowShadow}
                                                 : {}
                                         }
                                     >
                                         <div className="center-card-top">
                                             <div className="center-title-box">
                                                <span className="center-icon">
-  <DeviceIcon type={activeDevice.tip} />
+  <DeviceIcon type={activeDevice.tip}/>
 </span>
                                                 <div>
                                                     <h3>{activeDevice.nume}</h3>
@@ -1146,7 +1162,8 @@ export default function App() {
                                                 <div className="standby-power-circle">⏻</div>
                                                 <h4>{activeDevice.nume} este în modul Standby</h4>
                                                 <p>Dispozitivul este în așteptare și consumă doar 0.5W.</p>
-                                                <button className="action-btn primary" onClick={() => togglePower(activeDevice.id)}>
+                                                <button className="action-btn primary"
+                                                        onClick={() => togglePower(activeDevice.id)}>
                                                     ⚡ Pornește Dispozitivul
                                                 </button>
                                             </div>
@@ -1160,10 +1177,12 @@ export default function App() {
                                                         <div className="metrics-row">
                                                             <div className="mini-metric">
                                                                 <span className="m-label">Baterie</span>
-                                                                <span className={`m-val ${activeDevice.laDock && activeDevice.baterie < 100 ? "charging-val" : ""}`}>
+                                                                <span
+                                                                    className={`m-val ${activeDevice.laDock && activeDevice.baterie < 100 ? "charging-val" : ""}`}>
                                   {activeDevice.baterie}%
                                                                     {activeDevice.laDock && activeDevice.baterie < 100 && (
-                                                                        <span className="charging-badge"> ⚡ Încărcare...</span>
+                                                                        <span
+                                                                            className="charging-badge"> ⚡ Încărcare...</span>
                                                                     )}
                                                                     {activeDevice.laDock && activeDevice.baterie === 100 && (
                                                                         <span className="full-badge"> ✓ Plin</span>
@@ -1172,66 +1191,100 @@ export default function App() {
                                                             </div>
                                                             <div className="mini-metric">
                                                                 <span className="m-label">Suprafață Curățată</span>
-                                                                <span className="m-val">{activeDevice.suprafataCuratata} m²</span>
+                                                                <span
+                                                                    className="m-val">{activeDevice.suprafataCuratata} m²</span>
                                                             </div>
                                                             <div className="mini-metric">
                                                                 <span className="m-label">Timp Rulare</span>
-                                                                <span className="m-val">{formatSecunde(activeDevice.durataSecunde)}</span>
+                                                                <span
+                                                                    className="m-val">{formatSecunde(activeDevice.durataSecunde)}</span>
                                                             </div>
                                                         </div>
 
                                                         <div className="room-map-viewport">
                                                             <div className="map-badge-overlay">
                                 <span className="map-live-tag">
-                                  <span className={`map-live-dot ${activeDevice.inCuratare ? "pulse" : (activeDevice.seIntoarceLaDock ? "return-pulse" : "")}`}></span>
+                                  <span
+                                      className={`map-live-dot ${activeDevice.inCuratare ? "pulse" : (activeDevice.seIntoarceLaDock ? "return-pulse" : "")}`}></span>
                                     {activeDevice.inCuratare
                                         ? (activeDevice.mopActiv ? "ASPIRARE + SPĂLARE MOP ACTIVĂ" : "ASPIRARE USCATĂ ÎN CURS")
                                         : (activeDevice.seIntoarceLaDock ? "REVENIRE DIRECTĂ LA DOCK" : "ROBOT LA DOCK • ANDOCAT")}
                                 </span>
-                                                                <span className="map-room-title">Living • {activeDevice.stare}</span>
+                                                                <span
+                                                                    className="map-room-title">Living • {activeDevice.stare}</span>
                                                             </div>
 
                                                             <svg viewBox="0 0 400 200" className="room-map-svg">
                                                                 <defs>
-                                                                    <pattern id="carpetPattern" width="8" height="8" patternUnits="userSpaceOnUse">
-                                                                        <path d="M 0 0 L 8 8 M 8 0 L 0 8" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+                                                                    <pattern id="carpetPattern" width="8" height="8"
+                                                                             patternUnits="userSpaceOnUse">
+                                                                        <path d="M 0 0 L 8 8 M 8 0 L 0 8" fill="none"
+                                                                              stroke="rgba(255,255,255,0.08)"
+                                                                              strokeWidth="1"/>
                                                                     </pattern>
-                                                                    <linearGradient id="mopTrailGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                                                        <stop offset="0%" stopColor="#0284c7" stopOpacity="0.3" />
-                                                                        <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.95" />
+                                                                    <linearGradient id="mopTrailGrad" x1="0%" y1="0%"
+                                                                                    x2="100%" y2="0%">
+                                                                        <stop offset="0%" stopColor="#0284c7"
+                                                                              stopOpacity="0.3"/>
+                                                                        <stop offset="100%" stopColor="#38bdf8"
+                                                                              stopOpacity="0.95"/>
                                                                     </linearGradient>
-                                                                    <linearGradient id="dryTrailGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                                                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
-                                                                        <stop offset="100%" stopColor="#34d399" stopOpacity="0.95" />
+                                                                    <linearGradient id="dryTrailGrad" x1="0%" y1="0%"
+                                                                                    x2="100%" y2="0%">
+                                                                        <stop offset="0%" stopColor="#10b981"
+                                                                              stopOpacity="0.3"/>
+                                                                        <stop offset="100%" stopColor="#34d399"
+                                                                              stopOpacity="0.95"/>
                                                                     </linearGradient>
                                                                 </defs>
 
-                                                                <rect x="15" y="15" width="370" height="170" rx="10" className="map-floor" />
-                                                                <line x1="385" y1="135" x2="385" y2="165" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                                                                <text x="362" y="153" className="map-door-text">UȘĂ</text>
+                                                                <rect x="15" y="15" width="370" height="170" rx="10"
+                                                                      className="map-floor"/>
+                                                                <line x1="385" y1="135" x2="385" y2="165"
+                                                                      stroke="#38bdf8" strokeWidth="4"
+                                                                      strokeLinecap="round"/>
+                                                                <text x="362" y="153" className="map-door-text">UȘĂ
+                                                                </text>
 
-                                                                <rect x="130" y="60" width="140" height="85" rx="6" className="map-carpet" />
-                                                                <rect x="130" y="60" width="140" height="85" rx="6" fill="url(#carpetPattern)" />
-                                                                <text x="180" y="106" className="map-item-label">COVOR</text>
+                                                                <rect x="130" y="60" width="140" height="85" rx="6"
+                                                                      className="map-carpet"/>
+                                                                <rect x="130" y="60" width="140" height="85" rx="6"
+                                                                      fill="url(#carpetPattern)"/>
+                                                                <text x="180" y="106" className="map-item-label">COVOR
+                                                                </text>
 
                                                                 <g className="furniture-item">
-                                                                    <rect x="35" y="30" width="65" height="50" rx="6" className="furniture-body" />
-                                                                    <rect x="35" y="30" width="14" height="50" rx="3" className="furniture-accent" />
-                                                                    <text x="50" y="58" className="map-item-label">CANAPEA</text>
+                                                                    <rect x="35" y="30" width="65" height="50" rx="6"
+                                                                          className="furniture-body"/>
+                                                                    <rect x="35" y="30" width="14" height="50" rx="3"
+                                                                          className="furniture-accent"/>
+                                                                    <text x="50" y="58"
+                                                                          className="map-item-label">CANAPEA
+                                                                    </text>
                                                                 </g>
                                                                 <g className="furniture-item">
-                                                                    <rect x="175" y="30" width="50" height="22" rx="4" className="furniture-body" />
-                                                                    <text x="186" y="44" className="map-item-label">MASĂ</text>
+                                                                    <rect x="175" y="30" width="50" height="22" rx="4"
+                                                                          className="furniture-body"/>
+                                                                    <text x="186" y="44"
+                                                                          className="map-item-label">MASĂ
+                                                                    </text>
                                                                 </g>
                                                                 <g className="furniture-item">
-                                                                    <rect x="295" y="30" width="70" height="20" rx="4" className="furniture-body" />
-                                                                    <text x="314" y="43" className="map-item-label">TV STAND</text>
+                                                                    <rect x="295" y="30" width="70" height="20" rx="4"
+                                                                          className="furniture-body"/>
+                                                                    <text x="314" y="43" className="map-item-label">TV
+                                                                        STAND
+                                                                    </text>
                                                                 </g>
 
                                                                 <g className="dock-station">
-                                                                    <rect x="35" y="148" width="28" height="24" rx="4" className="dock-base" />
-                                                                    <path d="M 49 154 L 46 160 L 49 160 L 48 165 L 53 159 L 49 159 Z" fill="#fbbf24" />
-                                                                    <text x="28" y="183" className="dock-text">DOCK</text>
+                                                                    <rect x="35" y="148" width="28" height="24" rx="4"
+                                                                          className="dock-base"/>
+                                                                    <path
+                                                                        d="M 49 154 L 46 160 L 49 160 L 48 165 L 53 159 L 49 159 Z"
+                                                                        fill="#fbbf24"/>
+                                                                    <text x="28" y="183" className="dock-text">DOCK
+                                                                    </text>
                                                                 </g>
 
                                                                 {(activeDevice.traseuSalvat || activeDevice.pasTraseu > 0) && (
@@ -1267,24 +1320,28 @@ export default function App() {
                                                                     }}
                                                                 >
                                                                     {(activeDevice.inCuratare || activeDevice.seIntoarceLaDock) && (
-                                                                        <path d="M 0 0 L 26 -13 A 30 30 0 0 1 26 13 Z" className="lidar-cone" />
+                                                                        <path d="M 0 0 L 26 -13 A 30 30 0 0 1 26 13 Z"
+                                                                              className="lidar-cone"/>
                                                                     )}
 
-                                                                    <circle cx="0" cy="0" r="13" className="bot-shell" />
-                                                                    <circle cx="0" cy="0" r="10" className="bot-inner-ring" />
+                                                                    <circle cx="0" cy="0" r="13" className="bot-shell"/>
+                                                                    <circle cx="0" cy="0" r="10"
+                                                                            className="bot-inner-ring"/>
 
                                                                     {activeDevice.mopActiv && (
-                                                                        <circle cx="-5" cy="5" r="3.5" fill="#0284c7" />
+                                                                        <circle cx="-5" cy="5" r="3.5" fill="#0284c7"/>
                                                                     )}
 
-                                                                    <circle cx="-1" cy="0" r="4.5" className="bot-lidar-turret" />
-                                                                    <circle cx="0.5" cy="-1.5" r="1.5" fill="#ef4444" />
+                                                                    <circle cx="-1" cy="0" r="4.5"
+                                                                            className="bot-lidar-turret"/>
+                                                                    <circle cx="0.5" cy="-1.5" r="1.5" fill="#ef4444"/>
                                                                 </g>
                                                             </svg>
 
                                                             <div className="map-legend">
                                 <span className="legend-chip">
-                                  <span className={`legend-color ${activeDevice.mopActiv ? "color-mop" : "color-cleaned"}`}></span>
+                                  <span
+                                      className={`legend-color ${activeDevice.mopActiv ? "color-mop" : "color-cleaned"}`}></span>
                                     {activeDevice.mopActiv ? "Spălare Umedă Mop" : "Aspirare Uscată"}
                                 </span>
                                                                 <span className="legend-chip">
@@ -1314,7 +1371,7 @@ export default function App() {
                                                                 <div className="tank-progress-wrapper dust-wrapper">
                                                                     <div
                                                                         className={`tank-bar-fill ${activeDevice.nivelPraf > 80 ? "dust-high" : "dust-normal"}`}
-                                                                        style={{ width: `${activeDevice.nivelPraf}%` }}
+                                                                        style={{width: `${activeDevice.nivelPraf}%`}}
                                                                     ></div>
                                                                 </div>
                                                                 <div className="dock-action-row">
@@ -1333,7 +1390,7 @@ export default function App() {
                                                                                     afiseazaNotificare("Trimit robotul la stație pentru auto-golirea prafului...");
                                                                                     handleSendToDock();
                                                                                 } else {
-                                                                                    updateDevice(activeDevice.id, { nivelPraf: 0 }, "Roborock: Recipient de praf golit manual (0%).");
+                                                                                    updateDevice(activeDevice.id, {nivelPraf: 0}, "Roborock: Recipient de praf golit manual (0%).");
                                                                                     afiseazaNotificare("Recipient de praf golit complet!");
                                                                                 }
                                                                             }}
@@ -1359,7 +1416,7 @@ export default function App() {
                                                                 <div className="tank-progress-wrapper water-wrapper">
                                                                     <div
                                                                         className="tank-bar-fill water-fill"
-                                                                        style={{ width: `${activeDevice.nivelApaMop}%` }}
+                                                                        style={{width: `${activeDevice.nivelApaMop}%`}}
                                                                     ></div>
                                                                 </div>
                                                                 <div className="dock-action-row">
@@ -1373,7 +1430,7 @@ export default function App() {
                                                                         type="button"
                                                                         className="mini-dock-btn water-btn"
                                                                         onClick={() => {
-                                                                            updateDevice(activeDevice.id, { nivelApaMop: 100 }, "Roborock: Rezervor apă mop reumplut complet.");
+                                                                            updateDevice(activeDevice.id, {nivelApaMop: 100}, "Roborock: Rezervor apă mop reumplut complet.");
                                                                             afiseazaNotificare("Roborock: Rezervor de apă umplut la 100%!");
                                                                         }}
                                                                     >
@@ -1388,7 +1445,8 @@ export default function App() {
                                                                 <div className="mop-title-wrap">
                                                                     <span className="mop-icon">🌊</span>
                                                                     <div>
-                                                                        <h5>Funcționalitate Mopping (Spălare Podele)</h5>
+                                                                        <h5>Funcționalitate Mopping (Spălare
+                                                                            Podele)</h5>
                                                                         <span className="mop-sub">Umezește laveta și spală parchetul activ</span>
                                                                     </div>
                                                                 </div>
@@ -1398,7 +1456,7 @@ export default function App() {
                                                                     onClick={() =>
                                                                         updateDevice(
                                                                             activeDevice.id,
-                                                                            { mopActiv: !activeDevice.mopActiv },
+                                                                            {mopActiv: !activeDevice.mopActiv},
                                                                             `Roborock: Mopping ${!activeDevice.mopActiv ? "ACTIVAT" : "DEZACTIVAT"}`
                                                                         )
                                                                     }
@@ -1413,9 +1471,9 @@ export default function App() {
                                                                         <span className="group-title">Debit Scurgere Apă Lavetă</span>
                                                                         <div className="mode-selector">
                                                                             {[
-                                                                                { id: "Redus", icon: "💧" },
-                                                                                { id: "Mediu", icon: "💧💧" },
-                                                                                { id: "Ridicat", icon: "💧💧💧" },
+                                                                                {id: "Redus", icon: "💧"},
+                                                                                {id: "Mediu", icon: "💧💧"},
+                                                                                {id: "Ridicat", icon: "💧💧💧"},
                                                                             ].map((flow) => (
                                                                                 <button
                                                                                     key={flow.id}
@@ -1423,7 +1481,7 @@ export default function App() {
                                                                                     onClick={() =>
                                                                                         updateDevice(
                                                                                             activeDevice.id,
-                                                                                            { debitApa: flow.id },
+                                                                                            {debitApa: flow.id},
                                                                                             `Roborock: Debit apă mop setat pe ${flow.id}`
                                                                                         )
                                                                                     }
@@ -1481,7 +1539,7 @@ export default function App() {
                                                                         onClick={() =>
                                                                             updateDevice(
                                                                                 activeDevice.id,
-                                                                                { modCuratare: mod },
+                                                                                {modCuratare: mod},
                                                                                 `Roborock: Putere aspirare setată pe ${mod}`
                                                                             )
                                                                         }
@@ -1509,15 +1567,18 @@ export default function App() {
                                                             ></div>
                                                         )}
 
-                                                        <div className={`media-playback-card ${activeDevice.themeClass || "theme-plex"} ambilight-card-surface`}>
+                                                        <div
+                                                            className={`media-playback-card ${activeDevice.themeClass || "theme-plex"} ambilight-card-surface`}>
                                                             <div className="media-poster-badge">
                                                                 <span className="ambilight-mini-dot"></span>
                                                                 {activeDevice.badge || "PLEX 4K"}
                                                             </div>
                                                             <div className="media-details">
-                                                                <span className="media-source-tag">{activeDevice.sursa}</span>
+                                                                <span
+                                                                    className="media-source-tag">{activeDevice.sursa}</span>
                                                                 <h4 className="media-track-title">{activeDevice.titluMedia}</h4>
-                                                                <span className="media-codec-tag">{activeDevice.codec}</span>
+                                                                <span
+                                                                    className="media-codec-tag">{activeDevice.codec}</span>
                                                             </div>
 
                                                             {activeDevice.sursaKey === "HDMI 2" ? (
@@ -1530,7 +1591,8 @@ export default function App() {
                                     </span>
                                                                     </div>
                                                                     <div className="gaming-live-track">
-                                                                        <div className={`gaming-live-bar ${activeDevice.redare ? "animating" : ""}`}></div>
+                                                                        <div
+                                                                            className={`gaming-live-bar ${activeDevice.redare ? "animating" : ""}`}></div>
                                                                     </div>
                                                                 </div>
                                                             ) : (
@@ -1545,7 +1607,7 @@ export default function App() {
                                                                         max={activeDevice.durataTotalaSecunde}
                                                                         value={activeDevice.progresSecunde}
                                                                         onChange={(e) =>
-                                                                            updateDevice(activeDevice.id, { progresSecunde: Number(e.target.value) })
+                                                                            updateDevice(activeDevice.id, {progresSecunde: Number(e.target.value)})
                                                                         }
                                                                         className="timeline-slider"
                                                                     />
@@ -1558,7 +1620,7 @@ export default function App() {
                                                                         <button
                                                                             className="media-circle-btn"
                                                                             onClick={() =>
-                                                                                updateDevice(activeDevice.id, { progresSecunde: 0 }, "Google TV: Cronometru sesiune joc resetat la 00:00")
+                                                                                updateDevice(activeDevice.id, {progresSecunde: 0}, "Google TV: Cronometru sesiune joc resetat la 00:00")
                                                                             }
                                                                         >
                                                                             ⏱️ Reset Sesiune
@@ -1568,7 +1630,7 @@ export default function App() {
                                                                             onClick={() =>
                                                                                 updateDevice(
                                                                                     activeDevice.id,
-                                                                                    { redare: !activeDevice.redare },
+                                                                                    {redare: !activeDevice.redare},
                                                                                     `Google TV: ${!activeDevice.redare ? "Joc reluat (Ambilight ON)" : "Joc pus în pauză"}`
                                                                                 )
                                                                             }
@@ -1577,7 +1639,7 @@ export default function App() {
                                                                         </button>
                                                                         <button
                                                                             className={`media-circle-btn ${activeDevice.mut ? "active-muted" : ""}`}
-                                                                            onClick={() => updateDevice(activeDevice.id, { mut: !activeDevice.mut })}
+                                                                            onClick={() => updateDevice(activeDevice.id, {mut: !activeDevice.mut})}
                                                                         >
                                                                             {activeDevice.mut ? "🔇 Mut" : "🔊 Audio"}
                                                                         </button>
@@ -1599,7 +1661,7 @@ export default function App() {
                                                                             onClick={() =>
                                                                                 updateDevice(
                                                                                     activeDevice.id,
-                                                                                    { redare: !activeDevice.redare },
+                                                                                    {redare: !activeDevice.redare},
                                                                                     `Google TV: ${!activeDevice.redare ? "Redare pornită (Ambilight ON)" : "Redare în pauză"}`
                                                                                 )
                                                                             }
@@ -1621,7 +1683,7 @@ export default function App() {
                                                                         </button>
                                                                         <button
                                                                             className={`media-circle-btn ${activeDevice.mut ? "active-muted" : ""}`}
-                                                                            onClick={() => updateDevice(activeDevice.id, { mut: !activeDevice.mut })}
+                                                                            onClick={() => updateDevice(activeDevice.id, {mut: !activeDevice.mut})}
                                                                         >
                                                                             {activeDevice.mut ? "🔇 Mut" : "🔊 Activ"}
                                                                         </button>
@@ -1683,9 +1745,11 @@ export default function App() {
                                                     return (
                                                         <div className="climate-panel">
                                                             {/* STATUS BAR CENTRALĂ */}
-                                                            <div className={`boiler-status-banner ${isIncalzire ? "heating-on" : "heating-idle"}`}>
+                                                            <div
+                                                                className={`boiler-status-banner ${isIncalzire ? "heating-on" : "heating-idle"}`}>
                                                                 <div className="boiler-flame-box">
-                                                                    <span className="flame-icon">{isIncalzire ? "🔥" : "💤"}</span>
+                                                                    <span
+                                                                        className="flame-icon">{isIncalzire ? "🔥" : "💤"}</span>
                                                                     <div>
                                                                         <h4 className="boiler-title">
                                                                             {isIncalzire ? "Centrală Termică: ÎNCĂLZIRE ACTIVĂ" : "Centrală Termică: STANDBY"}
@@ -1697,7 +1761,8 @@ export default function App() {
                         </span>
                                                                     </div>
                                                                 </div>
-                                                                <span className={`boiler-pill ${isIncalzire ? "pill-flame" : "pill-idle"}`}>
+                                                                <span
+                                                                    className={`boiler-pill ${isIncalzire ? "pill-flame" : "pill-idle"}`}>
                       {isIncalzire ? "Flacără Activă" : "Pompă Oprită"}
                     </span>
                                                             </div>
@@ -1706,9 +1771,11 @@ export default function App() {
                                                             <div className="climate-grid-duo">
                                                                 {/* Card Temperatură Curentă */}
                                                                 <div className="climate-metric-box">
-                                                                    <span className="metric-tag">Temperatură Cameră</span>
+                                                                    <span
+                                                                        className="metric-tag">Temperatură Cameră</span>
                                                                     <div className="temp-big-display">
-                                                                        <span className="val-number">{tempCurenta.toFixed(1)}</span>
+                                                                        <span
+                                                                            className="val-number">{tempCurenta.toFixed(1)}</span>
                                                                         <span className="val-unit">°C</span>
                                                                     </div>
                                                                     <span className="metric-footnote">
@@ -1731,8 +1798,10 @@ export default function App() {
                                                                         >
                                                                             -
                                                                         </button>
-                                                                        <div className="temp-big-display target-display">
-                                                                            <span className="val-number">{tempTinta.toFixed(1)}</span>
+                                                                        <div
+                                                                            className="temp-big-display target-display">
+                                                                            <span
+                                                                                className="val-number">{tempTinta.toFixed(1)}</span>
                                                                             <span className="val-unit">°C</span>
                                                                         </div>
                                                                         <button
@@ -1762,7 +1831,8 @@ export default function App() {
                       </span>
                                                                 </div>
                                                                 <div className="graph-canvas-wrap">
-                                                                    <svg className="temp-svg-chart" viewBox="0 0 400 60" preserveAspectRatio="none">
+                                                                    <svg className="temp-svg-chart" viewBox="0 0 400 60"
+                                                                         preserveAspectRatio="none">
                                                                         <path
                                                                             d={`M 0 50 Q 80 ${60 - (activeDevice.istoricTemp?.[1] || 22) * 2}, 160 ${60 - (activeDevice.istoricTemp?.[2] || 22.5) * 2} T 320 ${60 - (activeDevice.istoricTemp?.[4] || 22.8) * 2} T 400 ${60 - tempCurenta * 2}`}
                                                                             fill="none"
@@ -1778,11 +1848,13 @@ export default function App() {
                                                             <div className="telemetry-compact-bar">
                                                                 <div className="t-item">
                                                                     <span className="t-lbl">Umiditate</span>
-                                                                    <span className="t-val">{activeDevice.umiditate ?? 48}%</span>
+                                                                    <span
+                                                                        className="t-val">{activeDevice.umiditate ?? 48}%</span>
                                                                 </div>
                                                                 <div className="t-item">
                                                                     <span className="t-lbl">Presiune Circuit</span>
-                                                                    <span className="t-val">{activeDevice.presiuneInstalatie ?? 1.5} bar</span>
+                                                                    <span
+                                                                        className="t-val">{activeDevice.presiuneInstalatie ?? 1.5} bar</span>
                                                                 </div>
                                                                 <div className="t-item">
                                                                     <span className="t-lbl">Conexiune</span>
@@ -1790,7 +1862,8 @@ export default function App() {
                                                                 </div>
                                                                 <div className="t-item">
                                                                     <span className="t-lbl">Protecție Siguranță</span>
-                                                                    <span className={`t-val ${activeDevice.alertaTermicaActiva ? "text-safe" : "text-warn"}`}>
+                                                                    <span
+                                                                        className={`t-val ${activeDevice.alertaTermicaActiva ? "text-safe" : "text-warn"}`}>
                         {activeDevice.alertaTermicaActiva ? "Armată (17°-26°C)" : "Dezactivată"}
                       </span>
                                                                 </div>
@@ -1803,7 +1876,7 @@ export default function App() {
                                                                     className={`btn-action-climate ${isIncalzire ? "force-stop" : "force-heat"}`}
                                                                     onClick={() => {
                                                                         const nextState = !isIncalzire;
-                                                                        updateDevice(activeDevice.id, { incalzireActiva: nextState });
+                                                                        updateDevice(activeDevice.id, {incalzireActiva: nextState});
                                                                         afiseazaNotificare(
                                                                             nextState ? "🔥 Forțare manuală: Centrala a fost pornită." : "❄️ Centrala a fost oprită manual."
                                                                         );
@@ -1817,7 +1890,7 @@ export default function App() {
                                                                     className={`btn-action-climate outline ${activeDevice.alertaTermicaActiva ? "alert-armed" : ""}`}
                                                                     onClick={() => {
                                                                         const nouaStare = !activeDevice.alertaTermicaActiva;
-                                                                        updateDevice(activeDevice.id, { alertaTermicaActiva: nouaStare });
+                                                                        updateDevice(activeDevice.id, {alertaTermicaActiva: nouaStare});
                                                                         afiseazaNotificare(
                                                                             nouaStare
                                                                                 ? "🔔 Alertă Termică de Siguranță armată (Monitorizează riscul de îngheț și geam deschis)."
@@ -1844,20 +1917,24 @@ export default function App() {
                                                             </div>
                                                             <div className="mini-metric">
                                                                 <span className="m-label">Boabe Râșniță</span>
-                                                                <span className="m-val">{activeDevice.nivelBoabe}%</span>
+                                                                <span
+                                                                    className="m-val">{activeDevice.nivelBoabe}%</span>
                                                             </div>
                                                             <div className="mini-metric">
                                                                 <span className="m-label">Cafele Azi</span>
-                                                                <span className="m-val">{activeDevice.cafeleAzi} cești</span>
+                                                                <span
+                                                                    className="m-val">{activeDevice.cafeleAzi} cești</span>
                                                             </div>
                                                         </div>
 
                                                         <div className="coffee-status-banner">
                                                             <div className="coffee-banner-top">
                                                                 <div>
-                                                                    <span className="coffee-tag">JURA P.E.P.® EXTRACTION</span>
+                                                                    <span
+                                                                        className="coffee-tag">JURA P.E.P.® EXTRACTION</span>
                                                                     <h4>{activeDevice.bauturaSelectata} • {activeDevice.volumApaMl} ml</h4>
-                                                                    <span className="coffee-sub">{activeDevice.stare}</span>
+                                                                    <span
+                                                                        className="coffee-sub">{activeDevice.stare}</span>
                                                                 </div>
                                                                 <div className="coffee-beans-Row">
                                                                     {"🫘".repeat(activeDevice.intensitateBoabe)}
@@ -1865,19 +1942,21 @@ export default function App() {
                                                             </div>
                                                             {activeDevice.inPreparare && (
                                                                 <div className="coffee-progress-track">
-                                                                    <div className="coffee-progress-fill" style={{ width: `${activeDevice.progresPreparare}%` }}></div>
+                                                                    <div className="coffee-progress-fill"
+                                                                         style={{width: `${activeDevice.progresPreparare}%`}}></div>
                                                                 </div>
                                                             )}
                                                         </div>
 
                                                         <div className="control-group">
-                                                            <span className="group-title">Selectează Specialitatea</span>
+                                                            <span
+                                                                className="group-title">Selectează Specialitatea</span>
                                                             <div className="mode-selector">
                                                                 {[
-                                                                    { nume: "Ristretto", ml: 25 },
-                                                                    { nume: "Espresso", ml: 45 },
-                                                                    { nume: "Cappuccino", ml: 150 },
-                                                                    { nume: "Flat White", ml: 140 },
+                                                                    {nume: "Ristretto", ml: 25},
+                                                                    {nume: "Espresso", ml: 45},
+                                                                    {nume: "Cappuccino", ml: 150},
+                                                                    {nume: "Flat White", ml: 140},
                                                                 ].map((b) => (
                                                                     <button
                                                                         key={b.nume}
@@ -1968,14 +2047,15 @@ export default function App() {
                                                 <div className="side-card-header">
                                                     <div className="side-card-info">
                                                        <span className="side-card-icon">
-  <DeviceIcon type={dev.tip} />
+  <DeviceIcon type={dev.tip}/>
 </span>
                                                         <div>
                                                             <h5>{dev.nume}</h5>
                                                             <span className="side-card-room">{dev.camera}</span>
                                                         </div>
                                                     </div>
-                                                    <span className={`side-chip chip-${dev.protocol.toLowerCase().replace(/[^a-z]/g, "")}`}>
+                                                    <span
+                                                        className={`side-chip chip-${dev.protocol.toLowerCase().replace(/[^a-z]/g, "")}`}>
                             {dev.protocol}
                           </span>
                                                 </div>
@@ -2007,10 +2087,10 @@ export default function App() {
                                         titlu: "Wi-Fi Hub Diagnostics",
                                         icon: "📡",
                                         detalii: [
-                                            { label: "SSID", val: "DeviceVault-IoT-5G" },
-                                            { label: "Canal & Bandă", val: "Canal 36 (80 MHz) • 5 GHz" },
-                                            { label: "IP Alocat Hub", val: "192.168.1.145 (Static)" },
-                                            { label: "Latență Gateway", val: "3 ms" },
+                                            {label: "SSID", val: "DeviceVault-IoT-5G"},
+                                            {label: "Canal & Bandă", val: "Canal 36 (80 MHz) • 5 GHz"},
+                                            {label: "IP Alocat Hub", val: "192.168.1.145 (Static)"},
+                                            {label: "Latență Gateway", val: "3 ms"},
                                         ],
                                     })
                                 }
@@ -2026,10 +2106,19 @@ export default function App() {
                                         titlu: "Roborock Ultra Dock Diagnostics",
                                         icon: "🤖",
                                         detalii: [
-                                            { label: "Status Baterie", val: `${devices[0].baterie}% (${devices[0].laDock ? "La încărcător" : "Pe traseu"})` },
-                                            { label: "Nivel Recipient Praf", val: `${devices[0].nivelPraf}% (${devices[0].nivelPraf === 0 ? "Gol / Curat" : "Colectat"})` },
-                                            { label: "Nivel Rezervor Apă Mop", val: `${devices[0].nivelApaMop}% (${devices[0].debitApa})` },
-                                            { label: "Filtru HEPA & Perii", val: "100% Curate & Funcționale" },
+                                            {
+                                                label: "Status Baterie",
+                                                val: `${devices[0].baterie}% (${devices[0].laDock ? "La încărcător" : "Pe traseu"})`
+                                            },
+                                            {
+                                                label: "Nivel Recipient Praf",
+                                                val: `${devices[0].nivelPraf}% (${devices[0].nivelPraf === 0 ? "Gol / Curat" : "Colectat"})`
+                                            },
+                                            {
+                                                label: "Nivel Rezervor Apă Mop",
+                                                val: `${devices[0].nivelApaMop}% (${devices[0].debitApa})`
+                                            },
+                                            {label: "Filtru HEPA & Perii", val: "100% Curate & Funcționale"},
                                         ],
                                     })
                                 }
@@ -2097,7 +2186,9 @@ export default function App() {
                                 ))}
                             </div>
                             <div className="diagnostic-modal-footer">
-                                <button className="action-btn primary" onClick={() => setDiagnosticModal(null)}>Închide</button>
+                                <button className="action-btn primary"
+                                        onClick={() => setDiagnosticModal(null)}>Închide
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -2122,7 +2213,8 @@ export default function App() {
                                 ))}
                             </div>
                             <div className="diagnostic-modal-footer">
-                                <button className="action-btn primary" onClick={() => setShowLogModal(false)}>Închide</button>
+                                <button className="action-btn primary" onClick={() => setShowLogModal(false)}>Închide
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -5,7 +5,7 @@ const ETICHETE_PROTOCOL = {
     "Wi-Fi": "Rețea Wi-Fi 5 GHz",
 };
 
-export default function DeviceCard({ device, onSelectDevice, onTogglePower, formatSecunde }) {
+export default function DeviceCard({device, onSelectDevice, onTogglePower, formatSecunde}) {
     const isOnline = device.online;
     const isGoogleTvGlow = device.id === 2 && isOnline && device.redare;
 
@@ -14,12 +14,12 @@ export default function DeviceCard({ device, onSelectDevice, onTogglePower, form
             className={`overview-card ${!isOnline ? "is-offline" : ""} ${
                 isGoogleTvGlow ? "overview-ambilight-card" : ""
             }`}
-            style={isGoogleTvGlow ? { "--card-glow": device.glowColor || "rgba(2, 132, 199, 0.4)" } : {}}
+            style={isGoogleTvGlow ? {"--card-glow": device.glowColor || "rgba(2, 132, 199, 0.4)"} : {}}
             onClick={() => onSelectDevice(device)}
         >
             <div className="ov-card-top">
                 <div className="ov-icon-box">
-                    <DeviceIcon type={device.tip} />
+                    <DeviceIcon type={device.tip}/>
                 </div>
                 <button
                     type="button"

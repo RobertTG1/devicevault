@@ -2,7 +2,7 @@
 // Componentă pentru randarea întregii liste de dispozitive
 import DeviceCard from "./DeviceCard.jsx";
 
-export default function DeviceList({ devices, onSelectDevice, onTogglePower, formatSecunde }) {
+export default function DeviceList({devices, onSelectDevice, onTogglePower, formatSecunde}) {
     // 1. Verificare listă goală (randare condiționată prin return timpuriu)
     if (!devices || devices.length === 0) {
         return (
