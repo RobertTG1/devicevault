@@ -1730,3 +1730,252 @@ body {
   width: 22px;
   height: 22px;
 }
+
+/* ==========================================================
+   TERMOSTAT INTELIGENT & CONTROL CENTRALĂ TERMICĂ
+   ========================================================== */
+.boiler-status-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.boiler-status-banner.heating-on {
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+}
+
+.boiler-status-banner.heating-idle {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.boiler-flame-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flame-icon {
+  font-size: 1.8rem;
+  animation: pulseFlame 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseFlame {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.boiler-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.boiler-sub {
+  font-size: 0.78rem;
+  color: var(--text-sub);
+}
+
+.boiler-pill {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.pill-flame {
+  background: #f97316;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+}
+
+.pill-idle {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--text-sub);
+}
+
+.climate-grid-duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.climate-metric-box {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.metric-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  letter-spacing: 0.5px;
+}
+
+.temp-big-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 10px 0;
+}
+
+.temp-big-display .val-number {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--text-main);
+}
+
+.temp-big-display .val-unit {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-sub);
+}
+
+.temp-target-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0;
+}
+
+.temp-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--bg-hover, rgba(0, 0, 0, 0.04));
+  color: var(--text-main);
+  font-size: 1.4rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.temp-btn:hover {
+  background: #0284c7;
+  color: #fff;
+  border-color: #0284c7;
+}
+
+.metric-footnote {
+  font-size: 0.72rem;
+  color: var(--text-sub);
+  font-weight: 600;
+}
+
+.history-graph-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.graph-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-sub);
+  margin-bottom: 8px;
+}
+
+.temp-svg-chart {
+  width: 100%;
+  height: 50px;
+}
+
+.telemetry-compact-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.t-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.t-lbl {
+  font-size: 0.68rem;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.t-val {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.text-safe {
+  color: #10b981;
+}
+
+.text-warn {
+  color: #ef4444;
+}
+
+.climate-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn-action-climate {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-action-climate.force-heat {
+  background: #f97316;
+  color: #fff;
+}
+
+.btn-action-climate.force-stop {
+  background: #ef4444;
+  color: #fff;
+}
+
+.btn-action-climate.outline {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-main);
+}
+
+.btn-action-climate.outline.alert-armed {
+  border-color: #10b981;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}

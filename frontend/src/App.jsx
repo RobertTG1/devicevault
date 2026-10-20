@@ -131,19 +131,18 @@ const initialDevices = [
     },
     {
         id: 3,
-        nume: "Aqara Temperature Sensor",
-        camera: "Balcon",
-        protocol: "Wi-Fi",
-        online: true,
+        nume: "Termostat Inteligent Centrală",
+        camera: "Living",
         tip: "climate",
-        temperatura: 22.8,
+        online: true,
+        protocol: "Wi-Fi",
+        temperatura: 22.9,
+        temperaturaTinta: 23.0,
+        incalzireActiva: false, // true când centrala aprinde arzătorul și bagă căldură
         umiditate: 48,
-        presiune: "1014 hPa",
-        calitateSemnal: "LQI 186",
-        alertaActiva: false,
-        pragAlerta: 28.0,
-        consumWatts: 1,
-        icon: "🌡️",
+        presiuneInstalatie: 1.5, // 1.5 bar - presiune circuit agent termic
+        alertaTermicaActiva: true,
+        istoricTemp: [21.4, 21.8, 22.1, 22.5, 22.8, 22.9],
     },
     {
         id: 4,
@@ -206,6 +205,42 @@ const initialRoutines = [
     },
 ];
 
+// Funcție unică de calcul a consumului instantaneu per echipament
+const getConsumDispozitiv = (d) => {
+    if (!d.online) return { w: 0.5, desc: "0.5 W (Standby pasiv)" };
+
+    if (d.tip === "vacuum") {
+        if (d.inCuratare) return { w: 55, desc: "55 W (Motor aspirare + Mop activ)" };
+        if (d.laDock) return { w: 15, desc: "15 W (Încărcare la Dock)" };
+        return { w: 4, desc: "4 W (Standby Ultra Dock)" };
+    }
+
+    if (d.tip === "media") {
+        if (d.redare) {
+            return d.sursaKey === "HDMI 2"
+                ? { w: 18, desc: "18 W (Sesiune Gaming VRR)" }
+                : { w: 18, desc: "18 W (Decodare 4K HDR)" };
+        }
+        return { w: 5, desc: "5 W (Standby ecran)" };
+    }
+
+    if (d.tip === "climate") {
+        if (d.incalzireActiva) {
+            return { w: 95, desc: "95 W (Centrală: Pompă recirculare & arzător)" };
+        }
+        return { w: 2, desc: "2 W (Standby termostat & placă electronică)" };
+    }
+
+    if (d.tip === "coffee") {
+        if (d.inPreparare) {
+            return { w: 1450, desc: "1450 W (Termobloc & pompă P.E.P.)" };
+        }
+        return { w: 12, desc: "12 W (Menținere temperatură)" };
+    }
+
+    return { w: 1, desc: "1 W (Nod IoT)" };
+};
+
 export default function App() {
     const [devices, setDevices] = useState(() => {
         const saved = localStorage.getItem("dv_devices_v9");
@@ -267,6 +302,60 @@ export default function App() {
         updateTime();
         const timer = setInterval(updateTime, 1000);
         return () => clearInterval(timer);
+    }, []);
+
+    // 2. Simulare termodinamică pentru Centrala Termică & Termostat (ADĂUGAT IMEDIAT DUPĂ)
+    useEffect(() => {
+        const termostatTimer = setInterval(() => {
+            setDevices((prevDevs) =>
+                prevDevs.map((dev) => {
+                    if (dev.tip !== "climate" || !dev.online) return dev;
+
+                    let temp = dev.temperatura;
+                    let incalzeste = dev.incalzireActiva;
+                    const tinta = dev.temperaturaTinta || 23.0;
+
+                    // Regula 1: Pornire centrală dacă temperatura scade cu 1 grad sub țintă
+                    if (temp <= Number((tinta - 1.0).toFixed(1))) {
+                        if (!incalzeste) {
+                            afiseazaNotificare("🔥 Centrala a PORNIT: Temperatura a scăzut sub pragul termic.");
+                        }
+                        incalzeste = true;
+                    }
+
+                    // Regula 2: Oprire centrală când depășește cu 0.5 grade ținta
+                    if (temp >= Number((tinta + 0.5).toFixed(1))) {
+                        if (incalzeste) {
+                            afiseazaNotificare("❄️ Centrala a atins ținta (+0.5°C): Arzător oprit, caloriferele radiază.");
+                        }
+                        incalzeste = false;
+                    }
+
+                    // Variație termică în timp
+                    if (incalzeste) {
+                        temp = Number((temp + 0.1).toFixed(1));
+                    } else {
+                        temp = Number((temp - 0.1).toFixed(1));
+                    }
+
+                    // Alertă de siguranță la geam deschis / îngheț
+                    if (dev.alertaTermicaActiva && temp < 17.0) {
+                        afiseazaNotificare("⚠️ ALERTĂ TERMICĂ: Temperatură critică scăzută (<17°C)! Verifică ferestrele.");
+                    }
+
+                    const istoricNou = [...(dev.istoricTemp || []).slice(1), temp];
+
+                    return {
+                        ...dev,
+                        temperatura: temp,
+                        incalzireActiva: incalzeste,
+                        istoricTemp: istoricNou,
+                    };
+                })
+            );
+        }, 3000);
+
+        return () => clearInterval(termostatTimer);
     }, []);
 
     // Stări izolate pentru cronometre independente
@@ -709,13 +798,10 @@ export default function App() {
     const sideDevices = devices.filter((d) => d.id !== activeDevice.id);
     const activeCount = devices.filter((d) => d.online).length;
 
-    const consumTotalWatts = devices.reduce((acc, d) => {
-        if (!d.online) return acc + 0.5;
-        if (d.tip === "vacuum") return acc + (d.inCuratare ? 55 : (d.laDock ? 15 : 4));
-        if (d.tip === "media") return acc + (d.redare ? 18 : 5);
-        if (d.tip === "coffee") return acc + (d.inPreparare ? 1450 : 12);
-        return acc + 1;
-    }, 0);
+    const consumTotalWatts = devices.reduce(
+        (acc, dev) => acc + getConsumDispozitiv(dev).w,
+        0
+    );
 
     const robotPos = activeDevice.pozitieCustom || VACUUM_WAYPOINTS[activeDevice.pasTraseu || 0];
     const dockPos = VACUUM_WAYPOINTS[0];
@@ -782,8 +868,7 @@ export default function App() {
     const islandActive = backgroundTasks.find((t) => !(activeTab === "room" && selectedId === t.device.id)) || (backgroundTasks.length > 0 ? backgroundTasks[0] : null);
 
     const activeMediaDev = devices.find((d) => d.id === 2);
-    const isMediaAmbilightActive = Boolean(activeMediaDev?.online && activeMediaDev?.redare);
-
+    Boolean(activeMediaDev?.online && activeMediaDev?.redare);
     return (
         <div className={`hub-viewport ${darkMode ? "dark-theme" : ""}`}>
             {/* ==========================================================
@@ -794,7 +879,7 @@ export default function App() {
                     aria-label="Notificări dispozitive active"
                     className="dynamic-island-capsule"
                     onClick={() => handleSelectDevice(islandActive.device)}
-                    style={{ "--island-glow": islandActive.glow }}
+                    style={{ boxShadow: `0 0 25px ${islandActive.glowColor || "rgba(2, 132, 199, 0.4)"}` }}
                 >
                     <div className="island-leading">
                        <span className="island-icon">
@@ -1003,10 +1088,10 @@ export default function App() {
                                             <p className="routine-desc">{routine.descriere}</p>
 
                                             <div className="routine-devices-tag">
-                                                {routine.dispozitiveAfectate.map((devName) => (
-                                                    <span key={devName} className="device-chip">
+                                                {routine.dispozitiveAfectate.map((devName, idx) => (
+                                                    <span key={`${String(devName)}-${idx}`} className="device-chip">
                             {devName}
-                          </span>
+                        </span>
                                                 ))}
                                             </div>
 
@@ -1588,104 +1673,164 @@ export default function App() {
                                                 {/* ==============================================
                             3. AQARA CLIMATE SENSOR
                             ============================================== */}
-                                                {activeDevice.tip === "climate" && (
-                                                    <div className="control-section">
-                                                        <div className="climate-display-cards">
-                                                            <div className="climate-big-card">
-                                                                <span className="c-label">Temperatură Curentă</span>
-                                                                <span className="c-value">{activeDevice.temperatura}°C</span>
-                                                                <span className="c-status">Ambianță optimă (Confort termic)</span>
-                                                            </div>
-                                                            <div className="climate-big-card">
-                                                                <span className="c-label">Umiditate Relativă</span>
-                                                                <span className="c-value">{activeDevice.umiditate}%</span>
-                                                                <span className="c-status">Nivel optim (40% - 60%)</span>
-                                                            </div>
-                                                        </div>
+                                                {activeDevice.tip === "climate" && (() => {
+                                                    const tempCurenta = activeDevice.temperatura ?? 22.9;
+                                                    const tempTinta = activeDevice.temperaturaTinta ?? 23.0;
+                                                    const isIncalzire = !!activeDevice.incalzireActiva;
+                                                    const pragPornire = (tempTinta - 1.0).toFixed(1);
+                                                    const pragOprire = (tempTinta + 0.5).toFixed(1);
 
-                                                        <div className="sparkline-container">
-                                                            <div className="sparkline-header">
-                                                                <span className="group-title">Istoric Temperatură (Ultimele 12 ore)</span>
-                                                                <span className="sparkline-range">Min: 20.4°C &bull; Max: 23.1°C</span>
+                                                    return (
+                                                        <div className="climate-panel">
+                                                            {/* STATUS BAR CENTRALĂ */}
+                                                            <div className={`boiler-status-banner ${isIncalzire ? "heating-on" : "heating-idle"}`}>
+                                                                <div className="boiler-flame-box">
+                                                                    <span className="flame-icon">{isIncalzire ? "🔥" : "💤"}</span>
+                                                                    <div>
+                                                                        <h4 className="boiler-title">
+                                                                            {isIncalzire ? "Centrală Termică: ÎNCĂLZIRE ACTIVĂ" : "Centrală Termică: STANDBY"}
+                                                                        </h4>
+                                                                        <span className="boiler-sub">
+                          {isIncalzire
+                              ? `Arzător pornit • Încălzește până la ${pragOprire}°C`
+                              : `Circuit oprit • Va reporni dacă scade sub ${pragPornire}°C`}
+                        </span>
+                                                                    </div>
+                                                                </div>
+                                                                <span className={`boiler-pill ${isIncalzire ? "pill-flame" : "pill-idle"}`}>
+                      {isIncalzire ? "Flacără Activă" : "Pompă Oprită"}
+                    </span>
                                                             </div>
-                                                            <div className="sparkline-chart-wrapper">
-                                                                <svg viewBox="0 0 300 65" className="sparkline-svg">
-                                                                    <defs>
-                                                                        <linearGradient id="climateGrad" x1="0" y1="0" x2="0" y2="1">
-                                                                            <stop offset="0%" stopColor="#10b981" stopOpacity="0.4" />
-                                                                            <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-                                                                        </linearGradient>
-                                                                    </defs>
-                                                                    <polygon
-                                                                        fill="url(#climateGrad)"
-                                                                        points="0,60 0,45 35,40 70,35 105,30 140,24 175,20 210,14 245,10 280,16 300,16 300,60"
-                                                                    />
-                                                                    <polyline
-                                                                        fill="none"
-                                                                        stroke="#10b981"
-                                                                        strokeWidth="3"
-                                                                        strokeLinecap="round"
-                                                                        points="0,45 35,40 70,35 105,30 140,24 175,20 210,14 245,10 280,16 300,16"
-                                                                    />
-                                                                    <circle cx="300" cy="16" r="4.5" fill="#047857" stroke="#ffffff" strokeWidth="2" />
-                                                                </svg>
-                                                            </div>
-                                                        </div>
 
-                                                        <div className="control-group">
-                                                            <span className="group-title">Telemetrie & Rețea</span>
-                                                            <div className="metrics-row">
-                                                                <div className="mini-metric">
-                                                                    <span className="m-label">Presiune Aer</span>
-                                                                    <span className="m-val">{activeDevice.presiune}</span>
+                                                            {/* DUAL DISPLAY: CURENT vs SETAT */}
+                                                            <div className="climate-grid-duo">
+                                                                {/* Card Temperatură Curentă */}
+                                                                <div className="climate-metric-box">
+                                                                    <span className="metric-tag">Temperatură Cameră</span>
+                                                                    <div className="temp-big-display">
+                                                                        <span className="val-number">{tempCurenta.toFixed(1)}</span>
+                                                                        <span className="val-unit">°C</span>
+                                                                    </div>
+                                                                    <span className="metric-footnote">
+                        {isIncalzire ? "▲ În creștere continuă" : "▼ Răcire treptată a camerei"}
+                      </span>
                                                                 </div>
-                                                                <div className="mini-metric">
-                                                                    <span className="m-label">Calitate Semnal</span>
-                                                                    <span className="m-val">{activeDevice.calitateSemnal}</span>
-                                                                </div>
-                                                                <div className="mini-metric">
-                                                                    <span className="m-label">Prag Notificare</span>
-                                                                    <span className="m-val">{activeDevice.pragAlerta}°C</span>
+
+                                                                {/* Card Temperatură Setată de Utilizator */}
+                                                                <div className="climate-metric-box target-box">
+                                                                    <span className="metric-tag">Temperatură Țintă Setată</span>
+                                                                    <div className="temp-target-controls">
+                                                                        <button
+                                                                            type="button"
+                                                                            className="temp-btn"
+                                                                            onClick={() =>
+                                                                                updateDevice(activeDevice.id, {
+                                                                                    temperaturaTinta: Number((tempTinta - 0.5).toFixed(1)),
+                                                                                })
+                                                                            }
+                                                                        >
+                                                                            -
+                                                                        </button>
+                                                                        <div className="temp-big-display target-display">
+                                                                            <span className="val-number">{tempTinta.toFixed(1)}</span>
+                                                                            <span className="val-unit">°C</span>
+                                                                        </div>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="temp-btn"
+                                                                            onClick={() =>
+                                                                                updateDevice(activeDevice.id, {
+                                                                                    temperaturaTinta: Number((tempTinta + 0.5).toFixed(1)),
+                                                                                })
+                                                                            }
+                                                                        >
+                                                                            +
+                                                                        </button>
+                                                                    </div>
+                                                                    <span className="metric-footnote">
+                        Pornire la: {pragPornire}°C &bull; Oprire: {pragOprire}°C
+                      </span>
                                                                 </div>
                                                             </div>
-                                                        </div>
 
-                                                        <div className="control-group">
-                                                            <div className="button-cluster">
+                                                            {/* GRAFIC EVOLUȚIE TEMPERATURĂ */}
+                                                            <div className="history-graph-card">
+                                                                <div className="graph-header">
+                                                                    <span className="graph-title">CURBA DE TEMPERATURĂ ȘI CĂLDURĂ</span>
+                                                                    <span className="graph-range">
+                        Min: {Math.min(...(activeDevice.istoricTemp || [21])).toFixed(1)}°C &bull; Max: {Math.max(...(activeDevice.istoricTemp || [23])).toFixed(1)}°C
+                      </span>
+                                                                </div>
+                                                                <div className="graph-canvas-wrap">
+                                                                    <svg className="temp-svg-chart" viewBox="0 0 400 60" preserveAspectRatio="none">
+                                                                        <path
+                                                                            d={`M 0 50 Q 80 ${60 - (activeDevice.istoricTemp?.[1] || 22) * 2}, 160 ${60 - (activeDevice.istoricTemp?.[2] || 22.5) * 2} T 320 ${60 - (activeDevice.istoricTemp?.[4] || 22.8) * 2} T 400 ${60 - tempCurenta * 2}`}
+                                                                            fill="none"
+                                                                            stroke={isIncalzire ? "#f97316" : "#10b981"}
+                                                                            strokeWidth="3"
+                                                                            strokeLinecap="round"
+                                                                        />
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* TELEMETRIE CENTRALĂ */}
+                                                            <div className="telemetry-compact-bar">
+                                                                <div className="t-item">
+                                                                    <span className="t-lbl">Umiditate</span>
+                                                                    <span className="t-val">{activeDevice.umiditate ?? 48}%</span>
+                                                                </div>
+                                                                <div className="t-item">
+                                                                    <span className="t-lbl">Presiune Circuit</span>
+                                                                    <span className="t-val">{activeDevice.presiuneInstalatie ?? 1.5} bar</span>
+                                                                </div>
+                                                                <div className="t-item">
+                                                                    <span className="t-lbl">Conexiune</span>
+                                                                    <span className="t-val">Wi-Fi Direct</span>
+                                                                </div>
+                                                                <div className="t-item">
+                                                                    <span className="t-lbl">Protecție Siguranță</span>
+                                                                    <span className={`t-val ${activeDevice.alertaTermicaActiva ? "text-safe" : "text-warn"}`}>
+                        {activeDevice.alertaTermicaActiva ? "Armată (17°-26°C)" : "Dezactivată"}
+                      </span>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* BUTOANE DE ACȚIUNE TERMOSTAT */}
+                                                            <div className="climate-actions-row">
                                                                 <button
-                                                                    className="action-btn secondary"
-                                                                    onClick={() =>
-                                                                        updateDevice(
-                                                                            activeDevice.id,
-                                                                            {
-                                                                                temperatura: Number((activeDevice.temperatura + 0.1).toFixed(1)),
-                                                                            },
-                                                                            "Aqara Sensor: Recalibrare manuală efectuată (+0.1°C)"
-                                                                        )
-                                                                    }
+                                                                    type="button"
+                                                                    className={`btn-action-climate ${isIncalzire ? "force-stop" : "force-heat"}`}
+                                                                    onClick={() => {
+                                                                        const nextState = !isIncalzire;
+                                                                        updateDevice(activeDevice.id, { incalzireActiva: nextState });
+                                                                        afiseazaNotificare(
+                                                                            nextState ? "🔥 Forțare manuală: Centrala a fost pornită." : "❄️ Centrala a fost oprită manual."
+                                                                        );
+                                                                    }}
                                                                 >
-                                                                    🔄 Recalibrează Valori (+0.1°C)
+                                                                    {isIncalzire ? "⏹ Oprește Forțat Căldura" : "⚡ Forțează Pornire Căldură"}
                                                                 </button>
+
                                                                 <button
-                                                                    className={`action-btn secondary ${activeDevice.alertaActiva ? "active" : ""}`}
-                                                                    onClick={() =>
-                                                                        updateDevice(
-                                                                            activeDevice.id,
-                                                                            {
-                                                                                alertaActiva: !activeDevice.alertaActiva,
-                                                                            },
-                                                                            `Aqara Sensor: Alertă termică ${
-                                                                                !activeDevice.alertaActiva ? "ACTIVATĂ" : "DEZACTIVATĂ"
-                                                                            }`
-                                                                        )
-                                                                    }
+                                                                    type="button"
+                                                                    className={`btn-action-climate outline ${activeDevice.alertaTermicaActiva ? "alert-armed" : ""}`}
+                                                                    onClick={() => {
+                                                                        const nouaStare = !activeDevice.alertaTermicaActiva;
+                                                                        updateDevice(activeDevice.id, { alertaTermicaActiva: nouaStare });
+                                                                        afiseazaNotificare(
+                                                                            nouaStare
+                                                                                ? "🔔 Alertă Termică de Siguranță armată (Monitorizează riscul de îngheț și geam deschis)."
+                                                                                : "🔕 Alertă Termică de Siguranță dezactivată."
+                                                                        );
+                                                                    }}
                                                                 >
-                                                                    🔔 {activeDevice.alertaActiva ? "Dezactivează Alertă" : "Activează Alertă Termică"}
+                                                                    {activeDevice.alertaTermicaActiva ? "🔔 Alertă Siguranță: ACTIVĂ" : "🔕 Alertă Siguranță: OPRITĂ"}
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                )}
+                                                    );
+                                                })()}
 
                                                 {/* ==============================================
                             4. JURA E8 SMART ESPRESSO
@@ -1893,9 +2038,41 @@ export default function App() {
                                 <span>Dock: Praf {devices[0].nivelPraf}% &bull; Apă {devices[0].nivelApaMop}% ℹ️</span>
                             </div>
 
-                            <div className="shortcut-pill">
+                            <div
+                                className="shortcut-pill clickable-pill"
+                                onClick={() => {
+                                    const detaliiConsum = devices.map((d) => {
+                                        const info = getConsumDispozitiv(d);
+                                        return {
+                                            label: `${d.nume} (${d.camera})`,
+                                            val: info.desc,
+                                        };
+                                    });
+
+                                    const costLunarEstimativ = (
+                                        ((consumTotalWatts * 24 * 30) / 1000) *
+                                        1.3
+                                    ).toFixed(1);
+
+                                    setDiagnosticModal({
+                                        titlu: "Telemetrie & Consum Energetic",
+                                        icon: "⚡",
+                                        detalii: [
+                                            ...detaliiConsum,
+                                            {
+                                                label: "Consum Total Instantaneu",
+                                                val: `${consumTotalWatts.toFixed(1)} W`,
+                                            },
+                                            {
+                                                label: "Cost Estimat Lunar (~1.30 lei/kWh)",
+                                                val: `~${costLunarEstimativ} RON / lună`,
+                                            },
+                                        ],
+                                    });
+                                }}
+                            >
                                 <span className="pill-icon">⚡</span>
-                                <span>Consum Hub: {consumTotalWatts.toFixed(0)} W</span>
+                                <span>Consum Hub: {consumTotalWatts.toFixed(0)} W ℹ️</span>
                             </div>
                         </footer>
                     </main>
