@@ -53,20 +53,33 @@ The device dashboard list is rendered dynamically from data through two dedicate
   per item.
 - `DeviceCard` receives a single item through props and displays it.
 
+## Stage 5: local state and events
+The application manages interactive UI state via React's useState hook with strict immutability:
+
+Device Management & Actions: Real-time state updates for toggling device connectivity (handleToggle via map), deleting nodes (handleDelete via filter), and selecting active items.
+
+Dynamic Theme Engine: Bi-directional dark/light mode toggle (handleTema) synchronized directly with the data-theme attribute on the root <html> element and persisted in localStorage (dv_dark_v9).
+
+Live Activity Log: Real-time event auditing logging every critical action (theme toggles, power state transitions) with localized timestamps (HH:MM:SS).
+
+Room Navigation: Synchronized sidebar room filtering (Living, Dormitor, Bucătărie, Balcon) mapping devices to spaces.
+
 ## Status
 
 - [x] Stage 1: HTML & CSS mockups
 - [x] Stage 2: JavaScript data structures & methods
 - [x] Stage 3: Vite and React project
 - [x] Stage 4: components rendered from data
-- [ ] Stage 5: local state and events
--
+- [x] Stage 5: local state and events
+
 
 ## Status
 
 - [x] Stage 1: static mockup
 - [x] Stage 2: data logic in JavaScript
 - [x] Stage 3: React project initialization
+- [x] Stage 4: components rendered from data
+- [x] Stage 5: local state and events
 
 ## Stage 1 Verification Table
 
@@ -116,3 +129,17 @@ The device dashboard list is rendered dynamically from data through two dedicate
 | S4-R5 | state changes the card look         | frontend/src/components/DeviceCard.jsx | Toggle device online/offline power state       |
 | S4-R6 | README Stage 4 section + AI log     | README.md, ai-log/etapa-04.md          | Read docs                                      |
 | S4-R7 | commit "Stage 4" pushed             | GitHub repository                      | Check git log                                  |
+
+
+### Stage 5 Verification Table
+
+| ID    | Requirement                                  | Where                                                                   | How to check                                           |
+|:------|:---------------------------------------------|:------------------------------------------------------------------------|:-------------------------------------------------------|
+| S5-R1 | State managed with useState in App           | [frontend/src/App.jsx](frontend/src/App.jsx)                            | Inspect devices and theme useState definitions         |
+| S5-R2 | Device toggle updates state immutably        | [frontend/src/App.jsx](frontend/src/App.jsx)                            | Click toggle button; verify state update via map       |
+| S5-R3 | Device delete updates state immutably        | [frontend/src/App.jsx](frontend/src/App.jsx)                            | Click delete button; verify state update via filter    |
+| S5-R4 | Active device & room navigation              | [frontend/src/App.jsx](frontend/src/App.jsx)                            | Click rooms and device cards; check active state        |
+| S5-R5 | Header counters updated from state           | [frontend/src/App.jsx](frontend/src/App.jsx)                            | Verify active/total counters change upon actions       |
+| S5-R6 | Dynamic theme toggle with data-theme & storage| [frontend/src/App.jsx](frontend/src/App.jsx), [frontend/src/App.css](frontend/src/App.css) | Toggle Dark/Light; check DOM data-theme & reload page |
+| S5-R7 | Live event audit log with timestamps         | [frontend/src/App.jsx](frontend/src/App.jsx)                            | Open Event Log; check new entries with HH:MM:SS time   |
+| S5-R8 | README Stage 5 section + AI log + pushed     | [README.md](README.md), [ai-log/etapa-05.md](ai-log/etapa-05.md)        | Read docs; verify "Stage 5" commit on GitHub           |
