@@ -1,5 +1,6 @@
 import {useState, useEffect} from "react";
 import "./App.css";
+import ThermostatCard from "./components/ThermostatCard.jsx";
 import DeviceList from "./components/DeviceList.jsx";
 import DeviceIcon from "./components/DeviceIcon.jsx";
 
@@ -1057,11 +1058,11 @@ export default function App() {
                             <div>
                                 <h2>DeviceVault Center</h2>
                                 <span className="hub-subtitle">
-                  {activeTab === "home" && "Vedere Generală Locuință • Toate camerele"}
+                    {activeTab === "home" && "Vedere Generală Locuință • Toate camerele"}
                                     {activeTab === "rutine" && "Scenarii & Automatizări Inteligente"}
                                     {activeTab === "room" && (
                                         <>
-                                            Zonă: <strong>{cameraSelectata}</strong> &bull; Focalizat: <strong>{activeDevice.nume}</strong>
+                                            Zonă: <strong>{cameraSelectata}</strong> &bull; Focalizat: <strong>{activeDevice?.nume || activeDevice?.name}</strong>
                                         </>
                                     )}
                 </span>
@@ -1098,9 +1099,9 @@ export default function App() {
                                     <div className="summary-stat">
                                         <span className="s-label">Climă Interior / Balcon</span>
                                         <span className="s-val">
-                        {devices.find((d) => d.id === 3)?.temperatura}°C &bull;{" "}
-                                            {devices.find((d) => d.id === 3)?.umiditate}%
-                    </span>
+                            {devices.find((d) => d.id === 3)?.temperatura || 22.5}°C &bull;{" "}
+                                            {devices.find((d) => d.id === 3)?.umiditate || 45}%
+                        </span>
                                         <span className="s-sub">Calitate aer optimă</span>
                                     </div>
                                     <div className="summary-stat">
@@ -1139,6 +1140,16 @@ export default function App() {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Cadran Grafic Termostat Wokwi (DHT22) */}
+                                <ThermostatCard
+                                    device={devices.find((d) => d.id === 3) || devices.find((d) => d.camera === "Balcon")}
+                                    onUpdateDevice={(updated) => {
+                                        setDevices((prev) =>
+                                            prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d))
+                                        );
+                                    }}
+                                />
 
                                 <DeviceList
                                     devices={devices}

@@ -2640,3 +2640,160 @@ body[data-theme="light"] {
     color: #475569 !important;
     border: 1px solid #cbd5e1 !important;
 }
+
+/* --- THERMOSTAT WOKWI COMPONENT --- */
+.thermostat-hub-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--card-border, #e2e8f0);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.thermostat-hub-card.is-heating {
+    border-color: #f97316;
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.2);
+}
+
+.thermostat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.thermostat-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-main, #0f172a);
+}
+
+.thermostat-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #f97316;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.btn-sim-toggle {
+    background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+    border: 1px solid var(--card-border, #e2e8f0);
+    color: var(--text-main, #0f172a);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+/* Arc Circular SVG Gauge */
+.gauge-container {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gauge-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: var(--card-border, #e2e8f0);
+    stroke-width: 8;
+}
+
+.gauge-progress {
+    fill: none;
+    stroke: #0284c7;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 314;
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.is-heating .gauge-progress {
+    stroke: #f97316;
+}
+
+.gauge-readout {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.gauge-temp-val {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+}
+
+.gauge-sub {
+    font-size: 0.8rem;
+    color: var(--text-sub, #64748b);
+}
+
+/* Butoane de comanda - / + */
+.thermostat-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.btn-temp-step {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--card-border, #e2e8f0);
+    background: var(--card-bg, #ffffff);
+    color: var(--text-main, #0f172a);
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn-temp-step:hover {
+    background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+}
+
+.thermostat-target-display {
+    text-align: center;
+}
+
+.thermostat-target-display .label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-sub, #64748b);
+    text-transform: uppercase;
+}
+
+.thermostat-target-display .value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main, #0f172a);
+}
+
+.thermostat-footer {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--card-border, #e2e8f0);
+    padding-top: 12px;
+    font-size: 0.8rem;
+    color: var(--text-sub, #64748b);
+}
