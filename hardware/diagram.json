@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "author": "Moraru Robert Luca",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 100, "left": 100, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht", "top": -30, "left": 180, "attrs": { "temperature": "22.5", "humidity": "45" } },
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": 100, "left": -50, "attrs": {} },
+    { "type": "wokwi-led", "id": "led1", "top": 70, "left": 360, "attrs": { "color": "red" } }
+  ],
+  "connections": [
+    [ "uno:GND.1", "dht:GND", "black", [ "v0" ] ],
+    [ "uno:5V", "dht:VCC", "red", [ "v0" ] ],
+    [ "uno:2", "dht:SDA", "green", [ "v0" ] ],
+    [ "uno:A0", "pot1:SIG", "blue", [ "v0" ] ],
+    [ "uno:5V", "pot1:VCC", "red", [ "v0" ] ],
+    [ "uno:GND.2", "pot1:GND", "black", [ "v0" ] ],
+    [ "uno:13", "led1:A", "orange", [ "v0" ] ],
+    [ "uno:GND.3", "led1:C", "black", [ "v0" ] ]
+  ]
+}
