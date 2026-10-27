@@ -5,7 +5,13 @@ const ETICHETE_PROTOCOL = {
     "Wi-Fi": "Rețea Wi-Fi 5 GHz",
 };
 
-export default function DeviceCard({device, onSelectDevice, onTogglePower, formatSecunde}) {
+export default function DeviceCard({
+                                       device,
+                                       onSelectDevice,
+                                       onToggle,
+                                       onDelete,
+                                       formatSecunde,
+                                   }) {
     const isOnline = device.online;
     const isGoogleTvGlow = device.id === 2 && isOnline && device.redare;
 
@@ -14,29 +20,56 @@ export default function DeviceCard({device, onSelectDevice, onTogglePower, forma
             className={`overview-card ${!isOnline ? "is-offline" : ""} ${
                 isGoogleTvGlow ? "overview-ambilight-card" : ""
             }`}
-            style={isGoogleTvGlow ? {"--card-glow": device.glowColor || "rgba(2, 132, 199, 0.4)"} : {}}
-            onClick={() => onSelectDevice(device)}
+            style={
+                isGoogleTvGlow
+                    ? { "--card-glow": device.glowColor || "rgba(2, 132, 199, 0.4)" }
+                    : {}
+            }
+            onClick={() => onSelectDevice && onSelectDevice(device)}
         >
             <div className="ov-card-top">
-                <div className="ov-icon-box">
-                    <DeviceIcon type={device.tip}/>
-                </div>
-                <button
-                    type="button"
-                    className={`power-switch-btn small ${isOnline ? "on" : "off"}`}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onTogglePower(device.id);
-                    }}
+                {/* Checkbox controlat + Pictogramă + Nume */}
+                <label
+                    className="task-main"
+                    onClick={(e) => e.stopPropagation()}
                 >
-                    {isOnline ? "PORNIT" : "OPRIT"}
-                </button>
+                    <input
+                        type="checkbox"
+                        checked={isOnline}
+                        onChange={() => onToggle(device.id)}
+                        aria-label={`Comută starea pentru ${device.nume}`}
+                    />
+                    <div className="ov-icon-box">
+                        <DeviceIcon type={device.tip} />
+                    </div>
+                </label>
+
+                <div className="card-top-actions" onClick={(e) => e.stopPropagation()}>
+                    <button
+                        type="button"
+                        className={`power-switch-btn small ${isOnline ? "on" : "off"}`}
+                        onClick={() => onToggle(device.id)}
+                        aria-label={`Pornire sau oprire ${device.nume}`}
+                    >
+                        {isOnline ? "PORNIT" : "OPRIT"}
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn-danger"
+                        onClick={() => onDelete(device.id)}
+                        aria-label={`Șterge ${device.nume}`}
+                    >
+                        Șterge
+                    </button>
+                </div>
             </div>
 
             <div className="ov-card-mid">
-                <h4>{device.nume}</h4>
+                <h4 className={!isOnline ? "text-strikethrough" : ""}>{device.nume}</h4>
                 <span className="ov-room-tag">
-          {device.camera} &bull; {ETICHETE_PROTOCOL[device.protocol] || "Rețea Wi-Fi 5 GHz"}
+          {device.camera} &bull;{" "}
+                    {ETICHETE_PROTOCOL[device.protocol] || "Rețea Wi-Fi 5 GHz"}
         </span>
             </div>
 
@@ -53,8 +86,9 @@ export default function DeviceCard({device, onSelectDevice, onTogglePower, forma
                   {device.tip === "media" &&
                       (device.sursaKey === "HDMI 2"
                           ? `Gaming: ${formatSecunde ? formatSecunde(device.progresSecunde) : device.progresSecunde}`
-                          : `${device.sursaKey}: ${device.titluMedia.slice(0, 18)}...`)}
-                  {device.tip === "climate" && `${device.temperatura}°C • Umiditate ${device.umiditate}%`}
+                          : `${device.sursaKey}: ${device.titluMedia ? device.titluMedia.slice(0, 18) : "Redare"}...`)}
+                  {device.tip === "climate" &&
+                      `${device.temperatura?.toFixed(1)}°C (Setat: ${device.temperaturaTinta?.toFixed(1)}°C)`}
                   {device.tip === "coffee" &&
                       (device.inPreparare
                           ? `Prepară ${device.bauturaSelectata}...`

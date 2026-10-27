@@ -16,6 +16,11 @@
     --pill-bg: #ffffff;
     --pill-border: #e2e8f0;
     --side-card-bg: #ffffff;
+
+    /* Variabilele lipsă pentru efecte de glow și hover */
+    --island-glow: rgba(56, 189, 248, 0.25);
+    --card-glow: rgba(56, 189, 248, 0.15);
+    --bg-hover: rgba(15, 23, 42, 0.05);
 }
 
 .hub-viewport.dark-theme {
@@ -161,7 +166,7 @@ body {
     padding: 1px 6px;
     border-radius: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0;
 }
 
 .island-sub-text {
@@ -2496,4 +2501,142 @@ body {
     border-color: #10b981;
     color: #10b981;
     background: rgba(16, 185, 129, 0.08);
+}
+
+
+/* ==========================================================
+   ETAPA 5: ADAPTARE COMPLETĂ TEMA LUMINOASĂ & TEMA ÎNTUNECATĂ
+   ========================================================== */
+
+/* Variabile implicite (Mod Nocturn / Dark) */
+:root {
+    --bg-main: #0b1120;
+    --panel-bg: #0f172a;
+    --card-bg: #111827;
+    --card-border: #1e293b;
+    --text-main: #f8fafc;
+    --text-sub: #94a3b8;
+    --sidebar-bg: #0b1120;
+    --btn-pill-bg: #1e293b;
+    --hover-bg: #1e293b;
+}
+
+/* Mod Nocturn forțat prin data-theme="dark" */
+:root[data-theme="dark"] {
+    --bg-main: #0b1120;
+    --panel-bg: #0f172a;
+    --card-bg: #111827;
+    --card-border: #1e293b;
+    --text-main: #f8fafc;
+    --text-sub: #94a3b8;
+    --sidebar-bg: #0b1120;
+    --btn-pill-bg: #1e293b;
+    --hover-bg: #1e293b;
+}
+
+/* MOD LUMINOS (Light Mode complet stilizat) */
+:root[data-theme="light"],
+body[data-theme="light"] {
+    --bg-main: #f1f5f9;
+    --panel-bg: #ffffff;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-sub: #475569;
+    --sidebar-bg: #ffffff;
+    --btn-pill-bg: #e2e8f0;
+    --hover-bg: #f8fafc;
+}
+
+/* ==========================================================
+   SUPRASCRIERI DIRECTE PENTRU ELEMENTELE DIN INTERFAȚĂ ÎN MODUL LUMINOS
+   ========================================================== */
+
+[data-theme="light"] .hub-viewport,
+[data-theme="light"] body {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+/* Panoul din stânga (Sidebar) */
+[data-theme="light"] .hub-sidebar,
+[data-theme="light"] .sidebar-left,
+[data-theme="light"] aside {
+    background-color: #ffffff !important;
+    border-right: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .weather-widget,
+[data-theme="light"] .date-header {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .sidebar-section-title,
+[data-theme="light"] .room-btn,
+[data-theme="light"] .camera-item,
+[data-theme="light"] .nav-link {
+    color: #334155 !important;
+}
+
+[data-theme="light"] .room-btn:hover,
+[data-theme="light"] .nav-link:hover {
+    background-color: #f1f5f9 !important;
+    color: #0284c7 !important;
+}
+
+/* Panoul de Sus (Consum, Climă, Acțiuni) */
+[data-theme="light"] .summary-dashboard,
+[data-theme="light"] .kpi-banner,
+[data-theme="light"] .hub-header-panel {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .summary-dashboard h4,
+[data-theme="light"] .summary-dashboard .kpi-label,
+[data-theme="light"] .summary-dashboard span {
+    color: #475569 !important;
+}
+
+[data-theme="light"] .summary-dashboard .kpi-val,
+[data-theme="light"] .summary-dashboard strong {
+    color: #0f172a !important;
+}
+
+/* Butoanele Pastilă din Header (Jurnal, Nocturn/Zi, Active) */
+[data-theme="light"] .header-pill-btn,
+[data-theme="light"] .hub-status-pill {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Cardurile de Dispozitive */
+[data-theme="light"] .overview-card {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="light"] .overview-card h4 {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .overview-card .ov-room-tag,
+[data-theme="light"] .overview-card .ov-live-info {
+    color: #64748b !important;
+}
+
+[data-theme="light"] .overview-card .ov-open-link {
+    color: #0284c7 !important;
+}
+
+/* Butonul de Reset Default din Sidebar */
+[data-theme="light"] .btn-reset-defaults,
+[data-theme="light"] .sidebar-bottom-actions button {
+    background-color: #ffffff !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
 }

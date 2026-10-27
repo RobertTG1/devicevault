@@ -3,6 +3,8 @@ import "./App.css";
 import DeviceList from "./components/DeviceList.jsx";
 import DeviceIcon from "./components/DeviceIcon.jsx";
 
+// Tema de pornire: citește setarea sistemului de operare conform ghidului
+
 // Coordonate precise pe harta living-ului
 const VACUUM_WAYPOINTS = [
     {x: 49, y: 160}, // 0: Dock
@@ -132,7 +134,7 @@ const initialDevices = [
     {
         id: 3,
         nume: "Termostat Inteligent Centrală",
-        camera: "Living",
+        camera: "Balcon",
         tip: "climate",
         online: true,
         protocol: "Wi-Fi",
@@ -242,10 +244,64 @@ const getConsumDispozitiv = (d) => {
 };
 
 export default function App() {
+
+
+    // Funcție de comutare a temei conform S5-R6
+    function handleTema() {
+        const nextMode = !darkMode;
+        setDarkMode(nextMode);
+
+        if (typeof document !== "undefined") {
+            document.documentElement.dataset.theme = nextMode ? "dark" : "light";
+        }
+        localStorage.setItem("dv_dark_v9", String(nextMode));
+
+        const textJurnal = `Temă vizuală comutată pe modul ${nextMode ? "Nocturn" : "Luminos"}`;
+        const acum = new Date().toLocaleTimeString("ro-RO", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+
+        setActivityLog((prev) => [
+            {
+                id: Date.now(),
+                time: acum,
+                timestamp: acum,
+                ora: acum,
+                timp: acum,
+                date: acum,
+                text: textJurnal,
+                mesaj: textJurnal,
+                message: textJurnal,
+                tip: "system",
+                type: "system",
+            },
+            ...prev,
+        ]);
+    }
+
+    // S5-R2: Comutare imutabilă a stării dispozitivului cu forma setDevices((prev) => ...)
+    function handleToggle(id) {
+        setDevices((prev) =>
+            prev.map((dev) =>
+                dev.id === id ? { ...dev, online: !dev.online } : dev
+            )
+        );
+    }
+
+    // S5-R3: Ștergere imutabilă a dispozitivului din listă
+    function handleDelete(id) {
+        setDevices((prev) => prev.filter((dev) => dev.id !== id));
+    }
+
+
     const [devices, setDevices] = useState(() => {
         const saved = localStorage.getItem("dv_devices_v9");
         return saved ? JSON.parse(saved) : initialDevices;
     });
+
+
 
     const [routines, setRoutines] = useState(() => {
         const saved = localStorage.getItem("dv_routines_v9");
@@ -253,9 +309,22 @@ export default function App() {
     });
 
     const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem("dv_dark_v9") === "true";
+        // 1. Calculăm valoarea inițială (din localStorage sau default pe true)
+        const saved = localStorage.getItem("dv_dark_v9");
+        const isDark = saved !== null ? saved === "true" : true;
+
+        // 2. Setăm atributul pe <html> folosind valoarea locală isDark
+        if (typeof document !== "undefined") {
+            document.documentElement.dataset.theme = isDark ? "dark" : "light";
+        }
+
+        return isDark;
     });
 
+// Sincronizare la fiecare randare
+    if (typeof document !== "undefined") {
+        document.documentElement.dataset.theme = darkMode ? "dark" : "light";
+    }
     const [activeTab, setActiveTab] = useState("room");
     const [selectedId, setSelectedId] = useState(2); // Focus pe Google TV pentru testare imediată Ambilight
     const [cameraSelectata, setCameraSelectata] = useState("Dormitor");
@@ -1002,8 +1071,12 @@ export default function App() {
                                 <button type="button" className="header-pill-btn" onClick={() => setShowLogModal(true)}>
                                     📋 Jurnal ({activityLog.length})
                                 </button>
-                                <button type="button" className="header-pill-btn"
-                                        onClick={() => setDarkMode(!darkMode)}>
+                                <button
+                                    type="button"
+                                    className="header-pill-btn"
+                                    aria-pressed={darkMode}
+                                    onClick={handleTema}
+                                >
                                     {darkMode ? "☀️ Zi" : "🌙 Nocturn"}
                                 </button>
                                 <div className="hub-status-pill">
@@ -1069,8 +1142,10 @@ export default function App() {
 
                                 <DeviceList
                                     devices={devices}
+                                    activeDeviceId={activeDevice?.id}
                                     onSelectDevice={handleSelectDevice}
-                                    onTogglePower={togglePower}
+                                    onToggle={handleToggle}
+                                    onDelete={handleDelete}
                                     formatSecunde={formatSecunde}
                                 />
                             </section>

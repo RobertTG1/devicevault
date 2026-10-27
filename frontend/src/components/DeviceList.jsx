@@ -1,28 +1,35 @@
 // frontend/src/components/DeviceList.jsx
-// Componentă pentru randarea întregii liste de dispozitive
 import DeviceCard from "./DeviceCard.jsx";
 
-export default function DeviceList({devices, onSelectDevice, onTogglePower, formatSecunde}) {
-    // 1. Verificare listă goală (randare condiționată prin return timpuriu)
+export default function DeviceList({
+                                       devices,
+                                       activeDeviceId,
+                                       onSelectDevice,
+                                       onToggle,
+                                       onDelete,
+                                       formatSecunde,
+                                   }) {
     if (!devices || devices.length === 0) {
         return (
-            <div className="empty-list-panel">
-                <span className="empty-icon">🔌</span>
-                <p className="empty">Nu există niciun dispozitiv configurat.</p>
-                <span className="empty-sub">Toate nodurile IoT sunt offline sau lista este goală.</span>
+            <div className="empty-devices-state">
+                <p className="empty">Nu există niciun dispozitiv înregistrat în rețea.</p>
+                <span className="empty-sub">
+          Toate nodurile au fost eliminate. Apasă pe &bdquo;Reset Default&ldquo; din meniul lateral pentru a restaura dispozitivele.
+        </span>
             </div>
         );
     }
 
-    // 2. Randare cu map() și atributul obligatoriu key={device.id}
     return (
-        <div className="overview-devices-grid">
+        <div className="overview-grid">
             {devices.map((device) => (
                 <DeviceCard
                     key={device.id}
                     device={device}
+                    isSelected={activeDeviceId === device.id}
                     onSelectDevice={onSelectDevice}
-                    onTogglePower={onTogglePower}
+                    onToggle={onToggle}
+                    onDelete={onDelete}
                     formatSecunde={formatSecunde}
                 />
             ))}
