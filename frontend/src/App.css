@@ -2797,3 +2797,28 @@ body[data-theme="light"] {
     font-size: 0.8rem;
     color: var(--text-sub, #64748b);
 }
+
+
+.task-form {
+    display: grid;
+    gap: 12px;
+}
+.task-form label {
+    display: grid;
+    gap: 4px;
+    font-weight: 500;
+}
+.task-form input,
+.task-form select {
+    padding: 8px 10px;
+    border: 1px solid var(--border, #ccc);
+    border-radius: 8px;
+    font: inherit;
+}
+.task-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.task-form input[aria-invalid="true"] {
+    border-color: var(--mare, #db2777);
+}

@@ -1,0 +1,140 @@
+/* Stiluri globale: variabile, elemente de bază, clase comune.
+   Stilurile de componentă stau în fișiere *.module.css */
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --text: #1f2933;
+    --muted: #6b7280;
+    --accent: #5b3fd9;
+    --accent-dark: #4338ca;
+    --accent-soft: #ede9fe;
+    --border: #e5e7eb;
+    --mica: #0d9488;
+    --medie: #d97706;
+    --mare: #db2777;
+    --error-bg: #fdf2f8;
+    --error-border: #fbcfe8;
+    --shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --radius: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #14121d;
+        --card: #1e1b2e;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --border: #352f4d;
+        --accent-soft: #222342;
+        --error-bg: #2a1622;
+        --error-border: #4a2437;
+        --shadow: none;
+    }
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+a {
+    color: var(--accent);
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.panel h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+
+.info {
+    color: var(--muted);
+}
+
+.empty {
+    color: var(--muted);
+    font-style: italic;
+}
+
+.error {
+    color: var(--mare);
+    background: var(--error-bg);
+    border: 1px solid var(--error-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.btn {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: var(--accent-dark);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-danger {
+    border: 1px solid var(--mare);
+    background: transparent;
+    color: var(--mare);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font: inherit;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: var(--mare);
+    color: #fff;
+}
+
+.badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    color: #fff;
+}
+
+.badge-mica {
+    background: var(--mica);
+}
+
+.badge-medie {
+    background: var(--medie);
+}
+
+.badge-mare {
+    background: var(--mare);
+}

@@ -1,4 +1,3 @@
-// frontend/src/components/DeviceList.jsx
 import DeviceCard from "./DeviceCard.jsx";
 
 export default function DeviceList({
@@ -12,9 +11,11 @@ export default function DeviceList({
     if (!devices || devices.length === 0) {
         return (
             <div className="empty-devices-state">
-                <p className="empty">Nu există niciun dispozitiv înregistrat în rețea.</p>
+                <p className="empty" data-testid="empty">
+                    Nu există niciun dispozitiv înregistrat în rețea.
+                </p>
                 <span className="empty-sub">
-          Toate nodurile au fost eliminate. Apasă pe &bdquo;Reset Default&ldquo; din meniul lateral pentru a restaura dispozitivele.
+          Toate nodurile au fost eliminate. Adaugă un dispozitiv din formularul de mai sus sau apasă pe &bdquo;Reset Default&ldquo;.
         </span>
             </div>
         );
@@ -26,7 +27,7 @@ export default function DeviceList({
                 <DeviceCard
                     key={device.id}
                     device={device}
-                    isSelected={activeDeviceId === device.id}
+                    isSelected={String(activeDeviceId) === String(device.id)}
                     onSelectDevice={onSelectDevice}
                     onToggle={onToggle}
                     onDelete={onDelete}
