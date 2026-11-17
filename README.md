@@ -64,13 +64,30 @@ Live Activity Log: Real-time event auditing logging every critical action (theme
 
 Room Navigation: Synchronized sidebar room filtering (Living, Dormitor, Bucătărie, Balcon) mapping devices to spaces.
 
-## Status
+# Stage 6: data from a mock API
 
-- [x] Stage 1: HTML & CSS mockups
-- [x] Stage 2: JavaScript data structures & methods
-- [x] Stage 3: Vite and React project
-- [x] Stage 4: components rendered from data
-- [x] Stage 5: local state and events
+Device data is persisted in `frontend/db.json` and served locally via `json-server` on port `3001`:
+
+- `api.js` encapsulates all REST HTTP requests (`fetchDevices`, `fetchDevice`, `createDevice`, `updateDevice`, `deleteDevice`) and validates response statuses.
+- `DevicesPage` loads the initial device list asynchronously on mount and handles conditional loading and error states.
+
+# Stage 7: form and validation
+
+Devices can be added from the main view through a controlled form, and every change is confirmed by the API before updating the list:
+
+- `DeviceForm` manages controlled inputs, runs client-side validation before submission, highlights invalid fields (`aria-invalid`), and resets after a successful `POST`.
+- `DevicesPage` synchronizes additions (`POST`), online/standby state toggles (`PATCH`), and deletions (`DELETE`) directly with the server.
+- Standardized `data-testid` attributes (`form`, `form-title`, `form-camera`, `form-tip`, `form-submit`, `item`, `item-toggle`, `item-title`, `item-delete`, `empty`) support automated end-to-end tests.
+
+# Stage 8: routing and detail page
+
+Client-side navigation is powered by `react-router-dom` without page reloads, paired with scoped CSS Modules styling:
+
+- `App.jsx` renders the global `<NavLink>` navigation bar styled with `App.module.css` and configures `<Routes>` across four views.
+- `DevicesPage` renders the main Smart Home Hub on `/`, while `DeviceCard` links each device to `/devices/:id`.
+- `DeviceDetaliuPage` reads `:id` via `useParams()`, fetches the single device from the API, and supports live power toggling and deletion with `useNavigate()`.
+- `DesprePage` (`/despre`) and `NotFoundPage` (`*`) handle the project overview and 404 fallback routes.
+
 
 
 ## Status
@@ -80,6 +97,9 @@ Room Navigation: Synchronized sidebar room filtering (Living, Dormitor, Bucătă
 - [x] Stage 3: React project initialization
 - [x] Stage 4: components rendered from data
 - [x] Stage 5: local state and events
+- [x] Stage 6: data from a mock API
+- [x] Stage 7: form and validation
+- [x] Stage 8: routing and detail page
 
 ## Stage 1 Verification Table
 
@@ -143,3 +163,44 @@ Room Navigation: Synchronized sidebar room filtering (Living, Dormitor, Bucătă
 | S5-R6 | Dynamic theme toggle with data-theme & storage| [frontend/src/App.jsx](frontend/src/App.jsx), [frontend/src/App.css](frontend/src/App.css) | Toggle Dark/Light; check DOM data-theme & reload page |
 | S5-R7 | Live event audit log with timestamps         | [frontend/src/App.jsx](frontend/src/App.jsx)                            | Open Event Log; check new entries with HH:MM:SS time   |
 | S5-R8 | README Stage 5 section + AI log + pushed     | [README.md](README.md), [ai-log/etapa-05.md](ai-log/etapa-05.md)        | Read docs; verify "Stage 5" commit on GitHub           |
+
+
+### Stage 6 Verification Table
+
+| ID | Requirement | Where |
+|:---|:---|:---|
+| S6-R1 | Mock REST API configured in `db.json` & `package.json` | [frontend/db.json](frontend/db.json), [frontend/package.json](frontend/package.json) |
+| S6-R2 | Centralized `fetch` API helper with `res.ok` checks | [frontend/src/api.js](frontend/src/api.js) |
+| S6-R3 | Initial devices fetched asynchronously on mount | [frontend/src/pages/DevicesPage.jsx](frontend/src/pages/DevicesPage.jsx) |
+| S6-R4 | Loading indicator rendered during fetch (`data-testid="loading"`) | [frontend/src/pages/DevicesPage.jsx](frontend/src/pages/DevicesPage.jsx) |
+| S6-R5 | Error banner rendered on failed requests (`data-testid="error"`) | [frontend/src/pages/DevicesPage.jsx](frontend/src/pages/DevicesPage.jsx) |
+| S6-R6 | Empty state rendered when API returns no devices | [frontend/src/components/DeviceList.jsx](frontend/src/components/DeviceList.jsx) |
+| S6-R7 | Effect cleanup prevents state updates after unmount | [frontend/src/pages/DevicesPage.jsx](frontend/src/pages/DevicesPage.jsx) |
+| S6-R8 | README Stage 6 section + AI log + pushed | [README.md](README.md), [ai-log/etapa-06.md](ai-log/etapa-06.md) |
+
+### Stage 7 Verification Table
+
+| ID | Requirement | Where |
+|:---|:---|:---|
+| S7-R1 | Controlled form component for adding devices | [frontend/src/components/DeviceForm.jsx](frontend/src/components/DeviceForm.jsx) |
+| S7-R2 | Client-side validation with error message & `aria-invalid` | [frontend/src/components/DeviceForm.jsx](frontend/src/components/DeviceForm.jsx), [frontend/src/App.css](frontend/src/App.css) |
+| S7-R3 | Create device persisted via `POST` before state update | [frontend/src/api.js](frontend/src/api.js), [frontend/src/pages/DevicesPage.jsx](frontend/src/pages/DevicesPage.jsx) |
+| S7-R4 | Toggle device online/standby persisted via `PATCH` | [frontend/src/api.js](frontend/src/api.js), [frontend/src/pages/DevicesPage.jsx](frontend/src/pages/DevicesPage.jsx) |
+| S7-R5 | Delete device persisted via `DELETE` | [frontend/src/api.js](frontend/src/api.js), [frontend/src/pages/DevicesPage.jsx](frontend/src/pages/DevicesPage.jsx) |
+| S7-R6 | Submit button disabled during pending API request | [frontend/src/components/DeviceForm.jsx](frontend/src/components/DeviceForm.jsx) |
+| S7-R7 | Standardized `data-testid` attributes on form and list items | [frontend/src/components/DeviceForm.jsx](frontend/src/components/DeviceForm.jsx), [frontend/src/components/DeviceCard.jsx](frontend/src/components/DeviceCard.jsx), [frontend/src/components/DeviceList.jsx](frontend/src/components/DeviceList.jsx) |
+| S7-R8 | README Stage 7 section + AI log + pushed | [README.md](README.md), [ai-log/etapa-07.md](ai-log/etapa-07.md) |
+
+### Stage 8 Verification Table
+
+| ID | Requirement | Where |
+|:---|:---|:---|
+| S8-R1 | Application wrapped in `BrowserRouter` | [frontend/src/main.jsx](frontend/src/main.jsx) |
+| S8-R2 | Route definitions for `/`, `/devices/:id`, `/despre`, and `*` | [frontend/src/App.jsx](frontend/src/App.jsx) |
+| S8-R3 | Global navigation bar using `NavLink` with active state | [frontend/src/App.jsx](frontend/src/App.jsx) |
+| S8-R4 | Device cards link to detail route `/devices/:id` | [frontend/src/components/DeviceCard.jsx](frontend/src/components/DeviceCard.jsx) |
+| S8-R5 | Detail page reads `:id` via `useParams()` and fetches item | [frontend/src/pages/DeviceDetaliuPage.jsx](frontend/src/pages/DeviceDetaliuPage.jsx), [frontend/src/api.js](frontend/src/api.js) |
+| S8-R6 | Detail page supports back navigation and delete redirect (`useNavigate`) | [frontend/src/pages/DeviceDetaliuPage.jsx](frontend/src/pages/DeviceDetaliuPage.jsx) |
+| S8-R7 | About page (`/despre`) and 404 fallback page (`*`) | [frontend/src/pages/DesprePage.jsx](frontend/src/pages/DesprePage.jsx), [frontend/src/pages/NotFoundPage.jsx](frontend/src/pages/NotFoundPage.jsx) |
+| S8-R8 | Scoped styling implemented via CSS Modules | [frontend/src/App.module.css](frontend/src/App.module.css), [frontend/src/App.jsx](frontend/src/App.jsx) |
+| S8-R9 | README Stage 8 section + AI log + pushed | [README.md](README.md), [ai-log/etapa-08.md](ai-log/etapa-08.md) |

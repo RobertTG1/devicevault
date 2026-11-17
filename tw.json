@@ -1,0 +1,9 @@
+{
+  "resource": "devices",
+  "title": "nume",
+  "done": "online",
+  "sample": {
+    "camera": "Living",
+    "tip": "climate"
+  }
+}
